@@ -1,0 +1,14 @@
+[package]
+edition = '2018'
+name = 'fo4'
+version = '0.1.0'
+
+[dependencies]
+anyhow = '1'
+clap.features = ['derive']
+clap.version = '3.0.0-beta.2'
+dirs = '3'
+once_cell = '1'
+serde.features = ['derive']
+serde.version = '1'
+serde_yaml = '0.8'
