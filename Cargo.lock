@@ -112,6 +112,7 @@ dependencies = [
  "once_cell",
  "serde",
  "serde_yaml",
+ "strsim",
 ]
 
 [[package]]

@@ -62,17 +62,27 @@ pub struct PerkDef {
 impl FromStr for PerkDef {
     type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let whitespaceless: String = s.split_whitespace().flat_map(|s| s.split('-')).collect();
-        for def in PERKS.right_values() {
-            if def.name.iter().any(|name| {
-                name.split_whitespace()
-                    .collect::<String>()
-                    .eq_ignore_ascii_case(&whitespaceless)
-            }) {
-                return Ok(def.clone());
-            }
+        let s = s.to_lowercase();
+        let s = &s;
+        let (def, sim) = PERKS
+            .right_values()
+            .flat_map(|def| {
+                def.name.iter().map(move |name| {
+                    let name = name.to_lowercase();
+                    (
+                        def,
+                        (strsim::jaro_winkler(s, &name) + strsim::normalized_levenshtein(s, &name))
+                            / 2.0,
+                    )
+                })
+            })
+            .max_by_key(|(_, sim)| (*sim * 1000000.0) as u32)
+            .unwrap();
+        if sim >= 0.6 {
+            Ok(def.clone())
+        } else {
+            bail!("Unknown perk: {}", s)
         }
-        bail!("Unknown perk: {}", s)
     }
 }
 

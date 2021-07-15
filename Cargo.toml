@@ -13,3 +13,4 @@ once_cell = '1'
 serde.features = ['derive']
 serde.version = '1'
 serde_yaml = '0.8'
+strsim = '0.10'
