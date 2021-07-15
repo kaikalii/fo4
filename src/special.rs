@@ -61,7 +61,7 @@ pub struct PerkDef {
 impl FromStr for PerkDef {
     type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let whitespaceless: String = s.split_whitespace().collect();
+        let whitespaceless: String = s.split_whitespace().flat_map(|s| s.split('-')).collect();
         for def in PERKS.right_values() {
             if def.name.iter().any(|name| {
                 name.split_whitespace()
@@ -212,6 +212,17 @@ pub enum Gender {
 impl Default for Gender {
     fn default() -> Self {
         Gender::Male
+    }
+}
+
+impl FromStr for Gender {
+    type Err = anyhow::Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(match s.to_lowercase().as_str() {
+            "male" | "man" | "boy" | "guy" | "gentleman" | "he" => Gender::Male,
+            "female" | "woman" | "girl" | "lady" | "she" => Gender::Female,
+            _ => bail!("Invalid gender: {}", s),
+        })
     }
 }
 

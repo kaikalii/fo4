@@ -66,7 +66,7 @@ fn main() {
                         value,
                         bobblehead,
                     } => build.set(stat, value, bobblehead),
-                    Command::AddPerk { perk, rank } => catch(|| {
+                    Command::Add { perk, rank } => catch(|| {
                         build.add_perk(&perk, rank)?;
                         let name = perk.name.get(build.gender.unwrap_or_default());
                         if rank == 0 {
@@ -76,12 +76,20 @@ fn main() {
                         }
                         Ok(())
                     }),
-                    Command::RemovePerk { perk } => catch(|| {
+                    Command::Remove { perk } => catch(|| {
                         build.remove_perk(&perk)?;
                         let name = perk.name.get(build.gender.unwrap_or_default());
                         println!("Removed {}\n", name);
                         Ok(())
                     }),
+                    Command::Name { name } => {
+                        build.name = Some(name);
+                        Ok(())
+                    }
+                    Command::Gender { gender } => {
+                        build.gender = Some(gender);
+                        Ok(())
+                    }
                     Command::Book { stat } => catch(|| {
                         if let Some(stat) = stat {
                             if build.special[&stat] == 10 {
@@ -91,10 +99,6 @@ fn main() {
                         build.special_book = stat;
                         Ok(())
                     }),
-                    Command::Name { name } => {
-                        build.name = Some(name);
-                        Ok(())
-                    }
                     Command::Save { name } => catch(|| {
                         if let Some(name) = name {
                             build.name = Some(name);
@@ -144,30 +148,29 @@ struct App {
 
 #[derive(Clap)]
 enum Command {
+    #[clap(about = "Set a special stat")]
     Set {
         stat: SpecialStat,
         value: u8,
         #[clap(short = 'b', long = "bobblehead")]
         bobblehead: bool,
     },
-    #[clap(alias = "add")]
-    AddPerk {
+    #[clap(about = "Add a perk by name and rank")]
+    Add {
         perk: PerkDef,
         #[clap(default_value = "1")]
         rank: u8,
     },
-    #[clap(alias = "remove")]
-    RemovePerk {
-        perk: PerkDef,
-    },
-    Book {
-        stat: Option<SpecialStat>,
-    },
-    Name {
-        name: String,
-    },
-    Save {
-        name: Option<String>,
-    },
+    #[clap(about = "Remove a perk")]
+    Remove { perk: PerkDef },
+    #[clap(about = "Set the build's name")]
+    Name { name: String },
+    #[clap(about = "Set the build's gender")]
+    Gender { gender: Gender },
+    #[clap(about = "The which stat to allocate the special book to")]
+    Book { stat: Option<SpecialStat> },
+    #[clap(about = "Save the build")]
+    Save { name: Option<String> },
+    #[clap(about = "Exit this tool")]
     Exit,
 }

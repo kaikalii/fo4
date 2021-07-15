@@ -45,6 +45,11 @@ impl fmt::Display for Build {
             writeln!(f, "{}", name)?;
             writeln!(f, "{}", bars)?;
         }
+
+        if let Some(gender) = self.gender {
+            writeln!(f, "Gender: {:?}", gender)?;
+        }
+        writeln!(f)?;
         for (stat, level) in &self.special {
             write!(
                 f,
@@ -103,7 +108,11 @@ impl Build {
     }
     pub fn add_perk(&mut self, def: &PerkDef, rank: u8) -> anyhow::Result<()> {
         if rank > def.ranks.len() as u8 {
-            bail!("{} only has {} ranks")
+            bail!(
+                "{} only has {} ranks",
+                def.name.get(self.gender.unwrap_or_default()),
+                def.ranks.len()
+            )
         } else if rank == 0 {
             self.remove_perk(def)
         } else if let Some(id) = PERKS.get_by_right(def) {
