@@ -53,10 +53,11 @@ fn main() {
 
     Lazy::force(&PERKS);
 
+    print!("{}[2J", 27 as char);
     println!("\n{}", build);
 
     for line in stdin().lock().lines().filter_map(|res| res.ok()) {
-        println!();
+        print!("{}[2J", 27 as char);
         let args: Vec<&str> = once("fo4").chain(line.split_whitespace()).collect();
         match Command::try_parse_from(args) {
             Ok(command) => {
@@ -123,11 +124,13 @@ fn main() {
                 };
                 if let Err(e) = res {
                     println!("{}\n", e);
-                } else {
-                    println!("{}\n", build);
                 }
+                println!("{}\n", build);
             }
-            Err(e) => println!("{}\n", e),
+            Err(e) => {
+                println!("{}", build);
+                println!("{}\n", e);
+            }
         }
     }
 }
