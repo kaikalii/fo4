@@ -5,6 +5,7 @@ use std::{
 };
 
 use anyhow::bail;
+use colored::{Color, Colorize};
 use serde::{Deserialize, Serialize};
 
 use crate::special::{Bobblehead, Gender, PerkDef, PerkId, SpecialStat, PERKS};
@@ -54,22 +55,33 @@ impl fmt::Display for Build {
             writeln!(f, "Remaining Points: {}", self.remaining_initial_points())?;
         }
         writeln!(f)?;
-        for (stat, level) in &self.special {
+        for (&stat, &points) in &self.special {
+            let total_points = self.total_base_points(stat);
+            let color = match total_points {
+                0..=1 => Color::BrightBlack,
+                2..=3 => Color::BrightYellow,
+                4..=6 => Color::BrightGreen,
+                9..=10 => Color::BrightBlue,
+                7..=8 => Color::BrightCyan,
+                _ => Color::BrightMagenta,
+            };
             write!(
                 f,
                 "{:>12} {}{}{}",
                 stat.to_string(),
-                level,
-                if self.bobbleheads.contains(&Bobblehead::Special(*stat)) {
+                points.to_string().color(color),
+                if self.bobbleheads.contains(&Bobblehead::Special(stat)) {
                     " + bobblehead"
                 } else {
                     ""
-                },
-                if self.special_book.as_ref() == Some(stat) {
+                }
+                .color(color),
+                if self.special_book == Some(stat) {
                     " + S.P.E.C.I.A.L. book"
                 } else {
                     ""
                 }
+                .color(color),
             )?;
             writeln!(f)?;
         }
@@ -92,7 +104,7 @@ impl fmt::Display for Build {
 
 impl Build {
     pub const INITIAL_ASSIGNABLE_POINTS: u8 = 21;
-    pub fn base_stat(&self, stat: SpecialStat) -> u8 {
+    pub fn total_base_points(&self, stat: SpecialStat) -> u8 {
         self.special[&stat]
             + if self.bobbleheads.contains(&Bobblehead::Special(stat)) {
                 1
@@ -163,7 +175,7 @@ impl Build {
         } else if let Some(id) = PERKS.get_by_right(def) {
             self.perks.insert(*id, rank);
             if let PerkId::Special { stat, points } = id {
-                while self.base_stat(*stat) < *points {
+                while self.total_base_points(*stat) < *points {
                     *self.special.get_mut(stat).unwrap() += 1;
                 }
             }

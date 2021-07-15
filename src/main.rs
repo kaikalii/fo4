@@ -13,6 +13,7 @@ use anyhow::bail;
 use clap::Clap;
 
 use build::*;
+use colored::Colorize;
 use once_cell::sync::Lazy;
 use special::*;
 
@@ -62,45 +63,54 @@ fn main() {
         let args: Vec<&str> = once("fo4").chain(line.split_whitespace()).collect();
         match Command::try_parse_from(args) {
             Ok(command) => {
+                let mut message = String::new();
                 let res = match command {
                     Command::Set {
                         stat,
                         value,
                         bobblehead,
-                    } => build.set(stat, value, bobblehead),
+                    } => build
+                        .set(stat, value, bobblehead)
+                        .map(|_| message = format!("Set {:?} to {}", stat, value)),
                     Command::Add { perk, rank } => catch(|| {
                         build.add_perk(&perk, rank)?;
                         let name = perk.name.get(build.gender.unwrap_or_default());
-                        if rank == 0 {
-                            println!("Removed {}\n", name)
+                        message = if rank == 0 {
+                            format!("Removed {}\n", name)
                         } else {
-                            println!("Added {} rank {}\n", name, rank);
-                        }
+                            format!("Added {} rank {}\n", name, rank)
+                        };
                         Ok(())
                     }),
                     Command::Remove { perk } => catch(|| {
                         build.remove_perk(&perk)?;
                         let name = perk.name.get(build.gender.unwrap_or_default());
-                        println!("Removed {}\n", name);
+                        message = format!("Removed {}\n", name);
                         Ok(())
                     }),
                     Command::Reset => {
                         build.reset();
+                        message = "Build reset!".into();
                         Ok(())
                     }
                     Command::Name { name } => {
+                        message = format!("Build name set to {:?}", name);
                         build.name = Some(name);
                         Ok(())
                     }
                     Command::Gender { gender } => {
                         build.gender = Some(gender);
+                        message = format!("Gender set to {:?}", gender);
                         Ok(())
                     }
                     Command::Book { stat } => catch(|| {
                         if let Some(stat) = stat {
                             if build.special[&stat] == 10 {
-                                bail!("The S.P.E.C.I.A.L. book cannot be used on maxed-out stats");
+                                bail!("The S.P.E.C.I.A.L. book cannot be used on a maxed-out stat");
                             }
+                            message = format!("Special book set to {:?}", stat);
+                        } else {
+                            message = "Special book reset".into();
                         }
                         build.special_book = stat;
                         Ok(())
@@ -112,25 +122,34 @@ fn main() {
                         let name = if let Some(name) = &build.name {
                             name
                         } else {
-                            bail!("A name for the build must be specified. Try \"name <NAME>\" or \"save <NAME>\"");
+                            bail!("A name for the build must be specified. Try \"name <NAME>\" or \"save <NAME>\".");
                         };
                         fs::create_dir_all(&build_dir())?;
                         fs::write(
                             build_dir().join(name).with_extension("yaml"),
                             &serde_yaml::to_vec(&build)?,
                         )?;
+                        message = "Build saved!".into();
                         Ok(())
                     }),
                     Command::Exit => break,
                 };
-                if let Err(e) = res {
-                    println!("{}\n", e);
+                if !message.is_empty() {
+                    println!("{}\n", message.bright_green());
                 }
                 println!("{}\n", build);
+                if let Err(e) = res {
+                    println!("{}\n", e.to_string().bright_red());
+                }
             }
             Err(e) => {
                 println!("{}", build);
-                println!("{}\n", e);
+                match e.kind {
+                    clap::ErrorKind::ValueValidation => {
+                        println!("{}\n", e.info[2].bright_red())
+                    }
+                    _ => println!("{}\n", e),
+                }
             }
         }
     }
