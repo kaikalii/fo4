@@ -2,7 +2,6 @@ mod build;
 mod special;
 
 use std::{
-    fs,
     io::{stdin, BufRead},
     iter::once,
     path::PathBuf,
@@ -20,25 +19,8 @@ use special::*;
 fn main() {
     let app = App::parse();
 
-    let mut build = if let Some(original_path) = app.path {
-        match catch(|| {
-            let mut path = original_path.clone();
-            if !path.exists() {
-                path = path.with_extension("yaml")
-            }
-            if !path.exists() {
-                path = build_dir().join(path);
-            }
-            if !path.exists() {
-                bail!(
-                    "Unable to find build file for \"{}\"",
-                    original_path.to_string_lossy()
-                );
-            }
-            let bytes = fs::read(path)?;
-            let build: Build = serde_yaml::from_slice(&bytes)?;
-            Ok(build)
-        }) {
+    let mut build = if let Some(path) = app.path {
+        match Build::load(path) {
             Ok(build) => build,
             Err(e) => {
                 println!("{}", e);
@@ -49,17 +31,15 @@ fn main() {
             }
         }
     } else {
+        print!("{}[2J", 27 as char);
+        println!("{}\n", Command::try_parse_from(&[""]).unwrap_err());
         Build::default()
     };
 
     Lazy::force(&PERKS);
-
-    print!("{}[2J", 27 as char);
-    println!("{}\n", Command::try_parse_from(&[""]).unwrap_err());
     println!("\n{}", build);
 
     for line in stdin().lock().lines().filter_map(|res| res.ok()) {
-        print!("{}[2J", 27 as char);
         let args: Vec<&str> = once("fo4").chain(line.split_whitespace()).collect();
         match Command::try_parse_from(args) {
             Ok(command) => {
@@ -119,21 +99,17 @@ fn main() {
                         if let Some(name) = name {
                             build.name = Some(name);
                         }
-                        let name = if let Some(name) = &build.name {
-                            name
-                        } else {
-                            bail!("A name for the build must be specified. Try \"name <NAME>\" or \"save <NAME>\".");
-                        };
-                        fs::create_dir_all(&build_dir())?;
-                        fs::write(
-                            build_dir().join(name).with_extension("yaml"),
-                            &serde_yaml::to_vec(&build)?,
-                        )?;
+                        build.save()?;
                         message = "Build saved!".into();
+                        Ok(())
+                    }),
+                    Command::Builds => catch(|| {
+                        open::that(Build::dir())?;
                         Ok(())
                     }),
                     Command::Exit => break,
                 };
+                print!("{}[2J", 27 as char);
                 if !message.is_empty() {
                     println!("{}\n", message.bright_green());
                 }
@@ -153,12 +129,6 @@ fn main() {
             }
         }
     }
-}
-
-fn build_dir() -> PathBuf {
-    dirs::data_dir()
-        .expect("No data directory")
-        .join("Fallout4Builds")
 }
 
 fn catch<F, T>(f: F) -> anyhow::Result<T>
@@ -200,6 +170,8 @@ enum Command {
     Book { stat: Option<SpecialStat> },
     #[clap(about = "Save the build")]
     Save { name: Option<String> },
+    #[clap(about = "Open the folder where builds are saved")]
+    Builds,
     #[clap(about = "Exit this tool")]
     Exit,
 }

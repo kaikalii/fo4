@@ -1,7 +1,8 @@
 use std::{
     collections::{BTreeMap, BTreeSet},
-    fmt,
+    fmt, fs,
     iter::repeat,
+    path::{Path, PathBuf},
 };
 
 use anyhow::bail;
@@ -200,5 +201,44 @@ impl Build {
         self.bobbleheads.clear();
         self.perks.clear();
         self.gender = None
+    }
+    pub fn dir() -> PathBuf {
+        dirs::data_dir()
+            .expect("No data directory")
+            .join("Fallout4Builds")
+    }
+    pub fn path(&self) -> PathBuf {
+        Self::dir()
+            .join(self.name.as_deref().unwrap_or("last"))
+            .with_extension("yaml")
+    }
+    pub fn save(&self) -> anyhow::Result<()> {
+        if self.name.is_none() {
+            bail!(
+                "A name for the build must be specified. Try \"name <NAME>\" or \"save <NAME>\"."
+            );
+        };
+        fs::create_dir_all(Build::dir())?;
+        fs::write(self.path(), &serde_yaml::to_vec(&self)?)?;
+        Ok(())
+    }
+    pub fn load(path: impl AsRef<Path>) -> anyhow::Result<Self> {
+        let original_path = path.as_ref();
+        let mut path = original_path.to_path_buf();
+        if !path.exists() {
+            path = path.with_extension("yaml")
+        }
+        if !path.exists() {
+            path = Self::dir().join(path);
+        }
+        if !path.exists() {
+            bail!(
+                "Unable to find build file for \"{}\"",
+                original_path.to_string_lossy()
+            );
+        }
+        let bytes = fs::read(path)?;
+        let build: Build = serde_yaml::from_slice(&bytes)?;
+        Ok(build)
     }
 }
