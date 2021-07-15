@@ -54,6 +54,7 @@ fn main() {
     Lazy::force(&PERKS);
 
     print!("{}[2J", 27 as char);
+    println!("{}\n", Command::try_parse_from(&[""]).unwrap_err());
     println!("\n{}", build);
 
     for line in stdin().lock().lines().filter_map(|res| res.ok()) {
@@ -153,7 +154,7 @@ struct App {
     path: Option<PathBuf>,
 }
 
-#[derive(Clap)]
+#[derive(Debug, Clap)]
 enum Command {
     #[clap(about = "Set a special stat")]
     Set {
