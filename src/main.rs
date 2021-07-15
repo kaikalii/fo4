@@ -13,6 +13,7 @@ use anyhow::bail;
 use clap::Clap;
 
 use build::*;
+use once_cell::sync::Lazy;
 use special::*;
 
 fn main() {
@@ -49,6 +50,9 @@ fn main() {
     } else {
         Build::default()
     };
+
+    Lazy::force(&PERKS);
+
     println!("\n{}", build);
 
     for line in stdin().lock().lines().filter_map(|res| res.ok()) {
@@ -62,7 +66,22 @@ fn main() {
                         value,
                         bobblehead,
                     } => build.set(stat, value, bobblehead),
-                    Command::Get { perk } => Ok(()),
+                    Command::AddPerk { perk, rank } => catch(|| {
+                        build.add_perk(&perk, rank)?;
+                        let name = perk.name.get(build.gender.unwrap_or_default());
+                        if rank == 0 {
+                            println!("Removed {}\n", name)
+                        } else {
+                            println!("Added {} rank {}\n", name, rank);
+                        }
+                        Ok(())
+                    }),
+                    Command::RemovePerk { perk } => catch(|| {
+                        build.remove_perk(&perk)?;
+                        let name = perk.name.get(build.gender.unwrap_or_default());
+                        println!("Removed {}\n", name);
+                        Ok(())
+                    }),
                     Command::Book { stat } => catch(|| {
                         if let Some(stat) = stat {
                             if build.special[&stat] == 10 {
@@ -131,7 +150,14 @@ enum Command {
         #[clap(short = 'b', long = "bobblehead")]
         bobblehead: bool,
     },
-    Get {
+    #[clap(alias = "add")]
+    AddPerk {
+        perk: PerkDef,
+        #[clap(default_value = "1")]
+        rank: u8,
+    },
+    #[clap(alias = "remove")]
+    RemovePerk {
         perk: PerkDef,
     },
     Book {

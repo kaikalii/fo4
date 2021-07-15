@@ -7,26 +7,32 @@ use std::{
 use anyhow::bail;
 use serde::{Deserialize, Serialize};
 
-use crate::special::{Bobblehead, SpecialStat};
+use crate::special::{Bobblehead, Gender, PerkDef, PerkId, SpecialStat, PERKS};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Build {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gender: Option<Gender>,
     pub special: BTreeMap<SpecialStat, u8>,
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     pub bobbleheads: BTreeSet<Bobblehead>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub special_book: Option<SpecialStat>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub perks: BTreeMap<PerkId, u8>,
 }
 
 impl Default for Build {
     fn default() -> Self {
         Build {
             name: None,
+            gender: None,
             special: SpecialStat::ALL.iter().map(|stat| (*stat, 1)).collect(),
             bobbleheads: BTreeSet::new(),
             special_book: None,
+            perks: BTreeMap::new(),
         }
     }
 }
@@ -56,7 +62,20 @@ impl fmt::Display for Build {
                     ""
                 }
             )?;
-            writeln!(f, " ")?;
+            writeln!(f)?;
+        }
+        writeln!(f)?;
+        for (id, rank) in &self.perks {
+            writeln!(
+                f,
+                "{} {}",
+                PERKS
+                    .get_by_left(id)
+                    .expect("Unknown perk")
+                    .name
+                    .get(self.gender.unwrap_or_default()),
+                rank
+            )?;
         }
         Ok(())
     }
@@ -81,5 +100,25 @@ impl Build {
             self.bobbleheads.remove(&Bobblehead::Special(stat));
         }
         Ok(())
+    }
+    pub fn add_perk(&mut self, def: &PerkDef, rank: u8) -> anyhow::Result<()> {
+        if rank > def.ranks.len() as u8 {
+            bail!("{} only has {} ranks")
+        } else if rank == 0 {
+            self.remove_perk(def)
+        } else if let Some(id) = PERKS.get_by_right(def) {
+            self.perks.insert(*id, rank);
+            Ok(())
+        } else {
+            bail!("Unknown perk")
+        }
+    }
+    pub fn remove_perk(&mut self, def: &PerkDef) -> anyhow::Result<()> {
+        if let Some(id) = PERKS.get_by_right(def) {
+            self.perks.remove(id);
+            Ok(())
+        } else {
+            bail!("Unknown perk")
+        }
     }
 }

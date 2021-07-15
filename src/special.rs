@@ -1,6 +1,7 @@
-use std::{collections::BTreeMap, fmt, str::FromStr};
+use std::{cmp::Ordering, collections::BTreeMap, fmt, process::exit, str::FromStr};
 
 use anyhow::bail;
+use bimap::BiBTreeMap;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 
@@ -46,31 +47,26 @@ impl fmt::Display for SpecialStat {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-pub enum SpecialPerk {}
-
-impl fmt::Display for SpecialPerk {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let mut chars = format!("{:?}", self).chars().peekable();
-        while let Some(c) = chars.next() {
-            write!(f, "{}", c)?;
-            if c.is_lowercase() && chars.peek().map_or(false, |c| c.is_uppercase()) {
-                write!(f, " ")?;
-            }
-        }
-        Ok(())
-    }
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub enum PerkId {
+    Special { stat: SpecialStat, points: u8 },
 }
 
-impl FromStr for SpecialPerk {
+#[derive(Debug, Clone, Deserialize)]
+pub struct PerkDef {
+    pub name: MaybeGendered<String>,
+    pub ranks: Vec<Rank>,
+}
+
+impl FromStr for PerkDef {
     type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        for perk in PERKS.all_special() {
-            let lower = s.to_lowercase();
+        let whitespaceless: String = s.split_whitespace().collect();
+        for def in PERKS.right_values() {
             if def.name.iter().any(|name| {
                 name.split_whitespace()
-                    .map(|s| s.to_lowercase())
-                    .any(|s| s == lower)
+                    .collect::<String>()
+                    .eq_ignore_ascii_case(&whitespaceless)
             }) {
                 return Ok(def.clone());
             }
@@ -79,63 +75,144 @@ impl FromStr for SpecialPerk {
     }
 }
 
+impl PartialEq for PerkDef {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+    }
+}
+
+impl Eq for PerkDef {}
+
+impl PartialOrd for PerkDef {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.name.partial_cmp(&other.name)
+    }
+}
+
+impl Ord for PerkDef {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.name.cmp(&other.name)
+    }
+}
+
 #[derive(Debug, Clone, Deserialize)]
 pub struct Rank {
     #[serde(default = "default_required_level", alias = "level")]
     pub required_level: u8,
     #[serde(alias = "desc")]
-    pub description: GenderedText,
+    pub description: MaybeGendered<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty", flatten)]
+    pub effects: Effects,
 }
 
 fn default_required_level() -> u8 {
     1
 }
 
-#[derive(Debug, Clone, Deserialize)]
-#[serde(untagged)]
-pub enum GenderedText {
-    Unisex(String),
-    Gendered { male: String, female: String },
+macro_rules! effects {
+    ($(($name:ident, $ty:ty, $default:expr)),* $(,)?) => {
+        #[derive(Debug, Clone, Deserialize)]
+        pub struct Effects {
+            $(
+                #[serde(default, skip_serializing_if = "Option::is_none")]
+                $name: Option<$ty>,
+            )*
+        }
+        impl PerkDef {
+            $(
+                #[allow(dead_code)]
+                pub fn $name(&self, rank: u8) -> $ty {
+                    self.ranks.iter().take(rank as usize).rev().find_map(|rank| rank.effects.$name).unwrap_or($default)
+                }
+            )*
+        }
+    };
 }
 
-impl GenderedText {
-    pub fn new(level: u8, description: impl Into<GenderedText>) -> Rank {
-        Rank {
-            required_level: level,
-            description: description.into(),
+effects!(
+    (unarmed_damage_mul, f64, 1.0),
+    (unarmed_disarm_chance, f64, 0.0),
+    (unarmed_power_attack_cripple_chance, f64, 0.0),
+    (unarmed_crits_paralyze, bool, false),
+    (melee_damage_mul, f64, 1.0),
+    (melee_disarm_chance, f64, 0.0),
+    (melee_cleaves, bool, false),
+    (melee_cripple_chance, f64, 0.0),
+    (can_slam_heads_off, bool, false),
+    (armor_mod_rank, u8, 0),
+    (melee_mod_rank, u8, 0),
+    (carry_weight_add, u8, 0),
+    (overencumbered_run_cost_mul, Option<f64>, None),
+    (overencumbered_freedom, bool, false),
+    (heavy_damage_mul, f64, 1.0),
+    (heavy_hip_fire_accuracy_add, f64, 1.0),
+    (heavy_stagger_chance, f64, 0.0),
+    (hip_fire_accuracy_add, f64, 0.0),
+    (hip_fire_damage_mul, f64, 1.0),
+);
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Deserialize)]
+#[serde(untagged)]
+pub enum MaybeGendered<T> {
+    Unisex(T),
+    Gendered(Gendered<T>),
+}
+
+impl<T> MaybeGendered<T> {
+    pub fn get(&self, gender: Gender) -> &T {
+        match self {
+            MaybeGendered::Unisex(s) => s,
+            MaybeGendered::Gendered(gendered) => gendered.get(gender),
         }
     }
-    pub fn get(&self, gender: Gender) -> &str {
+    pub fn iter(&self) -> impl Iterator<Item = &T> {
         match self {
-            GenderedText::Unisex(s) => s,
-            GenderedText::Gendered { male, female } => match gender {
-                Gender::Male => male,
-                Gender::Female => female,
-            },
-        }
-    }
-    pub fn iter(&self) -> impl Iterator<Item = &str> {
-        match self {
-            GenderedText::Unisex(s) => vec![s.as_str()],
-            GenderedText::Gendered { male, female } => vec![male.as_str(), female.as_str()],
+            MaybeGendered::Unisex(s) => vec![s],
+            MaybeGendered::Gendered(gendered) => {
+                vec![&gendered.male, &gendered.female]
+            }
         }
         .into_iter()
     }
 }
 
-impl<S> From<S> for GenderedText
-where
-    S: Into<String>,
-{
-    fn from(s: S) -> Self {
-        GenderedText::Unisex(s.into())
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Deserialize)]
+pub struct Gendered<T> {
+    pub male: T,
+    pub female: T,
+}
+
+impl<T> Gendered<T> {
+    pub fn get(&self, gender: Gender) -> &T {
+        match gender {
+            Gender::Male => &self.male,
+            Gender::Female => &self.female,
+        }
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+impl<T> From<T> for MaybeGendered<T> {
+    fn from(val: T) -> Self {
+        MaybeGendered::Unisex(val)
+    }
+}
+
+impl<T> From<Gendered<T>> for MaybeGendered<T> {
+    fn from(gendered: Gendered<T>) -> Self {
+        MaybeGendered::Gendered(gendered)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Gender {
     Male,
     Female,
+}
+
+impl Default for Gender {
+    fn default() -> Self {
+        Gender::Male
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -148,16 +225,30 @@ pub enum Bobblehead {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct SkillBobblehead {}
 
-#[derive(Clone)]
-pub struct AllPerks {
-    special: BTreeMap<SpecialStat, BTreeMap<SpecialPerk, Vec<Rank>>>,
+#[derive(Deserialize)]
+struct AllPerksRep {
+    special: BTreeMap<SpecialStat, Vec<PerkDef>>,
 }
 
-impl AllPerks {
-    pub fn all_special(&self) -> impl Iterator<Item = &SpecialPerk> {
-        self.special.values().flatten()
+pub static PERKS: Lazy<BiBTreeMap<PerkId, PerkDef>> = Lazy::new(|| {
+    let rep: AllPerksRep = match serde_yaml::from_str(include_str!("perks.yaml")) {
+        Ok(rep) => rep,
+        Err(e) => {
+            println!("{}", e);
+            exit(1);
+        }
+    };
+    let mut perks = BiBTreeMap::new();
+    for (stat, defs) in rep.special {
+        for (i, def) in defs.into_iter().enumerate() {
+            perks.insert(
+                PerkId::Special {
+                    stat,
+                    points: i as u8 + 1,
+                },
+                def,
+            );
+        }
     }
-}
-
-pub static PERKS: Lazy<AllPerks> =
-    Lazy::new(|| serde_yaml::from_str(include_str!("perks.yaml")).unwrap());
+    perks
+});
