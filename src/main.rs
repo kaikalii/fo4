@@ -82,6 +82,10 @@ fn main() {
                         println!("Removed {}\n", name);
                         Ok(())
                     }),
+                    Command::Reset => {
+                        build.reset();
+                        Ok(())
+                    }
                     Command::Name { name } => {
                         build.name = Some(name);
                         Ok(())
@@ -163,6 +167,8 @@ enum Command {
     },
     #[clap(about = "Remove a perk")]
     Remove { perk: PerkDef },
+    #[clap(about = "Reset the build")]
+    Reset,
     #[clap(about = "Set the build's name")]
     Name { name: String },
     #[clap(about = "Set the build's gender")]

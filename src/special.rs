@@ -50,6 +50,7 @@ impl fmt::Display for SpecialStat {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum PerkId {
     Special { stat: SpecialStat, points: u8 },
+    Bobblehead,
 }
 
 #[derive(Debug, Clone, Deserialize)]

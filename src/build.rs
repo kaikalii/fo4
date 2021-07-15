@@ -49,6 +49,10 @@ impl fmt::Display for Build {
         if let Some(gender) = self.gender {
             writeln!(f, "Gender: {:?}", gender)?;
         }
+        writeln!(f, "Required Level: {}", self.required_level())?;
+        if self.remaining_initial_points() > 0 {
+            writeln!(f, "Remaining Points: {}", self.remaining_initial_points())?;
+        }
         writeln!(f)?;
         for (stat, level) in &self.special {
             write!(
@@ -87,6 +91,47 @@ impl fmt::Display for Build {
 }
 
 impl Build {
+    pub const INITIAL_ASSIGNABLE_POINTS: u8 = 21;
+    pub fn base_stat(&self, stat: SpecialStat) -> u8 {
+        self.special[&stat]
+            + if self.bobbleheads.contains(&Bobblehead::Special(stat)) {
+                1
+            } else {
+                0
+            }
+            + if self.special_book == Some(stat) {
+                1
+            } else {
+                0
+            }
+    }
+    pub fn remaining_initial_points(&self) -> u8 {
+        Self::INITIAL_ASSIGNABLE_POINTS.saturating_sub(self.assigned_special_points())
+    }
+    pub fn assigned_special_points(&self) -> u8 {
+        self.special.values().sum::<u8>() - 7
+    }
+    pub fn assigned_perk_points(&self) -> u8 {
+        self.perks.values().sum::<u8>()
+    }
+    pub fn assigned_points(&self) -> u8 {
+        self.assigned_special_points() + self.assigned_perk_points()
+    }
+    pub fn required_level(&self) -> u8 {
+        let for_rank_reqs = self
+            .perks
+            .iter()
+            .map(|(id, rank)| {
+                PERKS.get_by_left(id).expect("Unknown perk").ranks[*rank as usize - 1]
+                    .required_level
+            })
+            .max()
+            .unwrap_or(1);
+        let for_spent_points = self
+            .assigned_points()
+            .saturating_sub(Self::INITIAL_ASSIGNABLE_POINTS);
+        for_rank_reqs.max(for_spent_points)
+    }
     pub fn set(
         &mut self,
         stat: SpecialStat,
@@ -117,6 +162,11 @@ impl Build {
             self.remove_perk(def)
         } else if let Some(id) = PERKS.get_by_right(def) {
             self.perks.insert(*id, rank);
+            if let PerkId::Special { stat, points } = id {
+                while self.base_stat(*stat) < *points {
+                    *self.special.get_mut(stat).unwrap() += 1;
+                }
+            }
             Ok(())
         } else {
             bail!("Unknown perk")
@@ -129,5 +179,14 @@ impl Build {
         } else {
             bail!("Unknown perk")
         }
+    }
+    pub fn reset(&mut self) {
+        for i in self.special.values_mut() {
+            *i = 1;
+        }
+        self.special_book = None;
+        self.bobbleheads.clear();
+        self.perks.clear();
+        self.gender = None
     }
 }
