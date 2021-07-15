@@ -31,7 +31,7 @@ fn main() {
             }
         }
     } else {
-        print!("{}[2J", 27 as char);
+        clear_terminal();
         println!("{}\n", Command::try_parse_from(&[""]).unwrap_err());
         Build::default()
     };
@@ -68,6 +68,26 @@ fn main() {
                         message = format!("Removed {}\n", name);
                         Ok(())
                     }),
+                    Command::Perk { perk } => {
+                        clear_terminal();
+                        println!("{}\n", build);
+                        let gender = build.gender.unwrap_or_default();
+                        println!("{}", perk.name.get(gender).bright_yellow());
+                        for (i, rank) in perk.ranks.iter().enumerate() {
+                            println!(
+                                "{} {}",
+                                format!("Rank {}", i + 1).bright_cyan(),
+                                format!("(Level {})", rank.required_level).bright_black(),
+                            );
+                            let width = terminal_size::terminal_size()
+                                .map_or(80, |(width, _)| width.0 as usize);
+                            let mut words = Vec::new();
+                            for word in rank.description.get(gender).split_whitespace() {
+                                if words.iter().map(|s| s.len()).sum() + word.len() > width {}
+                            }
+                        }
+                        continue;
+                    }
                     Command::Reset => {
                         build.reset();
                         message = "Build reset!".into();
@@ -109,7 +129,7 @@ fn main() {
                     }),
                     Command::Exit => break,
                 };
-                print!("{}[2J", 27 as char);
+                clear_terminal();
                 if !message.is_empty() {
                     println!("{}\n", message.bright_green());
                 }
@@ -129,6 +149,10 @@ fn main() {
             }
         }
     }
+}
+
+fn clear_terminal() {
+    print!("{}[2J", 27 as char);
 }
 
 fn catch<F, T>(f: F) -> anyhow::Result<T>
@@ -160,6 +184,8 @@ enum Command {
     },
     #[clap(about = "Remove a perk")]
     Remove { perk: PerkDef },
+    #[clap(about = "Display a perk")]
+    Perk { perk: PerkDef },
     #[clap(about = "Reset the build")]
     Reset,
     #[clap(about = "Set the build's name")]

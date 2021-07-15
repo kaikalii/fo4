@@ -2,25 +2,25 @@ special:
   Strength:
     - name: Iron Fist
       ranks:
-        - level: 1
-          desc: Channel your chi to unleash devastating fury! Punching attacks do 20% more damage to your opponent.
-          unarmed_damage_mul: 1.2
-        - level: 9
-          desc: Punching attacks now do 40% more damage and can disarm your opponent.
-          unarmed_damage_mul: 1.4
-          unarmed_disarm_chance: 0.15
-        - level: 18
-          desc: Punching attacks now do 60% more damage. Unarmed Power Attacks have a chance to cripple one of your opponent's limbs.
-          unarmed_damage_mul: 1.6
-          unarmed_power_attack_cripple_chance: 0.15
-        - level: 31
-          desc: Punching attacks now do 80% more damage. Unarmed Power Attacks have an increased chance to cripple one of your opponent's limbs.
-          unarmed_damage_mul: 1.8
-          unarmed_power_attack_cripple_chance: 0.3
-        - level: 46
-          desc: Punching attacks now do double damage. Criticals in V.A.T.S. will paralyze your opponent.
-          unarmed_damage_mul: 2
-          unarmed_crits_paralyze: true
+      - level: 1
+        desc: Channel your chi to unleash devastating fury! Punching attacks do 20% more damage to your opponent.
+        unarmed_damage_mul: 1.2
+      - level: 9
+        desc: Punching attacks now do 40% more damage and can disarm your opponent.
+        unarmed_damage_mul: 1.4
+        unarmed_disarm_chance: 0.15
+      - level: 18
+        desc: Punching attacks now do 60% more damage. Unarmed Power Attacks have a chance to cripple one of your opponent's limbs.
+        unarmed_damage_mul: 1.6
+        unarmed_power_attack_cripple_chance: 0.15
+      - level: 31
+        desc: Punching attacks now do 80% more damage. Unarmed Power Attacks have an increased chance to cripple one of your opponent's limbs.
+        unarmed_damage_mul: 1.8
+        unarmed_power_attack_cripple_chance: 0.3
+      - level: 46
+        desc: Punching attacks now do double damage. Criticals in V.A.T.S. will paralyze your opponent.
+        unarmed_damage_mul: 2
+        unarmed_crits_paralyze: true
     - name: Big Leagues
       ranks:
       - level: 1
