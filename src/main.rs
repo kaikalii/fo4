@@ -47,7 +47,6 @@ fn main() {
         let args: Vec<&str> = once("fo4").chain(line.split_whitespace()).collect();
         match Command::try_parse_from(args) {
             Ok(command) => {
-                let mut message = String::new();
                 let res = match command {
                     Command::Set {
                         stat,
@@ -55,23 +54,21 @@ fn main() {
                         bobblehead,
                     } => build
                         .set(stat, value, bobblehead)
-                        .map(|_| message = format!("Set {:?} to {}", stat, value)),
+                        .map(|_| format!("Set {:?} to {}", stat, value)),
                     Command::Add { perk, rank } => catch(|| {
                         let rank = rank.unwrap_or_else(|| perk.max_rank());
                         build.add_perk(&perk, rank)?;
                         let name = perk.name.get(build.gender.unwrap_or_default());
-                        message = if rank == 0 {
+                        Ok(if rank == 0 {
                             format!("Removed {}", name)
                         } else {
                             format!("Added {} rank {}", name, rank)
-                        };
-                        Ok(())
+                        })
                     }),
                     Command::Remove { perk } => catch(|| {
                         build.remove_perk(&perk)?;
                         let name = perk.name.get(build.gender.unwrap_or_default());
-                        message = format!("Removed {}", name);
-                        Ok(())
+                        Ok(format!("Removed {}", name))
                     }),
                     Command::Perk { perk } => {
                         clear_terminal();
@@ -96,52 +93,51 @@ fn main() {
                     }
                     Command::Reset => {
                         build.reset();
-                        message = "Build reset!".into();
-                        Ok(())
+                        Ok("Build reset!".into())
                     }
                     Command::Name { name } => {
-                        message = format!("Build name set to {:?}", name);
+                        let message = format!("Build name set to {:?}", name);
                         build.name = Some(name);
-                        Ok(())
+                        Ok(message)
                     }
                     Command::Gender { gender } => {
                         build.gender = Some(gender);
-                        message = format!("Gender set to {:?}", gender);
-                        Ok(())
+                        Ok(format!("Gender set to {:?}", gender))
                     }
                     Command::Book { stat } => catch(|| {
-                        if let Some(stat) = stat {
+                        let message = if let Some(stat) = stat {
                             if build.special[&stat] == 10 {
                                 bail!("The S.P.E.C.I.A.L. book cannot be used on a maxed-out stat");
                             }
-                            message = format!("Special book set to {:?}", stat);
+                            format!("Special book set to {:?}", stat)
                         } else {
-                            message = "Special book reset".into();
-                        }
+                            "Special book reset".into()
+                        };
                         build.special_book = stat;
-                        Ok(())
+                        Ok(message)
                     }),
                     Command::Save { name } => catch(|| {
                         if let Some(name) = name {
                             build.name = Some(name);
                         }
                         build.save()?;
-                        message = "Build saved!".into();
-                        Ok(())
+                        Ok("Build saved!".into())
                     }),
                     Command::Builds => catch(|| {
                         open::that(Build::dir())?;
-                        Ok(())
+                        Ok(String::new())
                     }),
                     Command::Exit => break,
                 };
                 clear_terminal();
                 println!("{}", build);
-                if !message.is_empty() {
-                    println!("{}\n", message.bright_green());
-                }
-                if let Err(e) = res {
-                    println!("{}\n", e.to_string().bright_red());
+                match res {
+                    Ok(message) => {
+                        if !message.is_empty() {
+                            println!("{}\n", message.bright_green())
+                        }
+                    }
+                    Err(e) => println!("{}\n", e.to_string().bright_red()),
                 }
             }
             Err(e) => {
