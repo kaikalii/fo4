@@ -81,9 +81,25 @@ fn main() {
                             );
                             let width = terminal_size::terminal_size()
                                 .map_or(80, |(width, _)| width.0 as usize);
-                            let mut words = Vec::new();
+                            let mut words: Vec<&str> = Vec::new();
                             for word in rank.description.get(gender).split_whitespace() {
-                                if words.iter().map(|s| s.len()).sum() + word.len() > width {}
+                                if words.iter().map(|s| s.len() + 1).sum::<usize>() + word.len()
+                                    >= width - 1
+                                {
+                                    print!("  ");
+                                    for word in words.drain(..) {
+                                        print!("{} ", word);
+                                    }
+                                    println!();
+                                }
+                                words.push(word);
+                            }
+                            if !words.is_empty() {
+                                print!("  ");
+                                for word in words {
+                                    print!("{} ", word);
+                                }
+                                println!();
                             }
                         }
                         continue;
@@ -139,6 +155,7 @@ fn main() {
                 }
             }
             Err(e) => {
+                clear_terminal();
                 println!("{}", build);
                 match e.kind {
                     clap::ErrorKind::ValueValidation => {

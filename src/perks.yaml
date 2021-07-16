@@ -2,126 +2,142 @@ special:
   Strength:
     - name: Iron Fist
       ranks:
-      - level: 1
-        desc: Channel your chi to unleash devastating fury! Punching attacks do 20% more damage to your opponent.
-        unarmed_damage_mul: 1.2
-      - level: 9
-        desc: Punching attacks now do 40% more damage and can disarm your opponent.
-        unarmed_damage_mul: 1.4
-        unarmed_disarm_chance: 0.15
-      - level: 18
-        desc: Punching attacks now do 60% more damage. Unarmed Power Attacks have a chance to cripple one of your opponent's limbs.
-        unarmed_damage_mul: 1.6
-        unarmed_power_attack_cripple_chance: 0.15
-      - level: 31
-        desc: Punching attacks now do 80% more damage. Unarmed Power Attacks have an increased chance to cripple one of your opponent's limbs.
-        unarmed_damage_mul: 1.8
-        unarmed_power_attack_cripple_chance: 0.3
-      - level: 46
-        desc: Punching attacks now do double damage. Criticals in V.A.T.S. will paralyze your opponent.
-        unarmed_damage_mul: 2
-        unarmed_crits_paralyze: true
+        - level: 1
+          desc: Channel your chi to unleash devastating fury! Punching attacks do 20% more damage to your opponent.
+          unarmed_damage_mul: 1.2
+        - level: 9
+          desc: Punching attacks now do 40% more damage and can disarm your opponent.
+          unarmed_damage_mul: 1.4
+          unarmed_disarm_chance: 0.15
+        - level: 18
+          desc: Punching attacks now do 60% more damage. Unarmed Power Attacks have a chance to cripple one of your opponent's limbs.
+          unarmed_damage_mul: 1.6
+          unarmed_power_attack_cripple_chance: 0.15
+        - level: 31
+          desc: Punching attacks now do 80% more damage. Unarmed Power Attacks have an increased chance to cripple one of your opponent's limbs.
+          unarmed_damage_mul: 1.8
+          unarmed_power_attack_cripple_chance: 0.3
+        - level: 46
+          desc: Punching attacks now do double damage. Criticals in V.A.T.S. will paralyze your opponent.
+          unarmed_damage_mul: 2
+          unarmed_crits_paralyze: true
     - name: Big Leagues
       ranks:
-      - level: 1
-        desc: Swing for the fences! Do 20% more melee weapon damage.
-        melee_damage_mul: 1.2
-      - level: 7
-        desc: You now do 40% more melee weapon damage and gain a chance to disarm your opponent.
-        melee_damage_mul: 1.4
-        melee_disarm_chance: 0.15
-      - level: 15
-        desc: You now do 60% more melee weapon damage and gain an increased chance to disarm your opponent.
-        melee_damage_mul: 1.6
-        melee_disarm_chance: 0.3
-      - level: 27
-        desc: You now do 80% more melee weapon damage and hit all targets in front of you.
-        melee_damage_mul: 1.8
-        melee_cleaves: true
-      - level: 42
-        desc: You now do double damage with a melee weapon, and gain a chance to cripple your opponent, or grand slam their head clean off!
-        melee_damage_mul: 2
-        can_slam_heads_off: true
+        - level: 1
+          desc: Swing for the fences! Do 20% more melee weapon damage.
+          melee_damage_mul: 1.2
+        - level: 7
+          desc: You now do 40% more melee weapon damage and gain a chance to disarm your opponent.
+          melee_damage_mul: 1.4
+          melee_disarm_chance: 0.15
+        - level: 15
+          desc: You now do 60% more melee weapon damage and gain an increased chance to disarm your opponent.
+          melee_damage_mul: 1.6
+          melee_disarm_chance: 0.3
+        - level: 27
+          desc: You now do 80% more melee weapon damage and hit all targets in front of you.
+          melee_damage_mul: 1.8
+          melee_cleaves: true
+        - level: 42
+          desc: You now do double damage with a melee weapon, and gain a chance to cripple your opponent, or grand slam their head clean off!
+          melee_damage_mul: 2
+          can_slam_heads_off: true
     - name: Armorer
       ranks:
-      - level: 1
-        desc: Protect yourself from the dangers of the Wasteland with access to base level and Rank 1 armor mods.
-        armor_mod_rank: 1
-      - level: 13
-        desc: You gain access to Rank 2 armor mods.
-        armor_mod_rank: 2
-      - level: 25
-        desc: You gain access to Rank 3 armor mods.
-        armor_mod_rank: 3
-      - level: 39
-        desc: You gain access to Rank 4 armor mods.
-        armor_mod_rank: 4
+        - level: 1
+          desc: Protect yourself from the dangers of the Wasteland with access to base level and Rank 1 armor mods.
+          armor_mod_rank: 1
+        - level: 13
+          desc: You gain access to Rank 2 armor mods.
+          armor_mod_rank: 2
+        - level: 25
+          desc: You gain access to Rank 3 armor mods.
+          armor_mod_rank: 3
+        - level: 39
+          desc: You gain access to Rank 4 armor mods.
+          armor_mod_rank: 4
     - name: Blacksmith
       ranks:
-      - level: 1
-        desc: Fire up the forge and gain access to base level and Rank 1 melee weapon mods.
-        melee_mod_rank: 1
-      - level: 16
-        desc: You gain access to Rank 2 melee weapon mods.
-        melee_mod_rank: 2
-      - level: 29
-        desc: You gain access to Rank 3 melee weapon mods.
-        melee_mod_rank: 3
+        - level: 1
+          desc: Fire up the forge and gain access to base level and Rank 1 melee weapon mods.
+          melee_mod_rank: 1
+        - level: 16
+          desc: You gain access to Rank 2 melee weapon mods.
+          melee_mod_rank: 2
+        - level: 29
+          desc: You gain access to Rank 3 melee weapon mods.
+          melee_mod_rank: 3
     - name: Heavy Gunner
       ranks:
-      - level: 1
-        desc: Thanks to practice and conditioning, heavy guns do 20% more damage.
-        heavy_damage_mul: 1.2
-      - level: 11
-        desc: Heavy guns now do 40% more damage, and have improved hip fire accuracy.
-        heavy_damage_mul: 1.4
-        heavy_hip_fire_accuracy_add: 0.15
-      - level: 21
-        desc: Heavy guns now do 60% more damage. Hip fire accuracy is increased even more.
-        heavy_damage_mul: 1.6
-        heavy_hip_fire_accuracy_add: 0.3
-      - level: 35
-        desc: Heavy guns now do 80% more damage and have a chance to stagger your opponent.
-        heavy_damage_mul: 1.8
-        heavy_stagger_chance: 0.15
-      - level: 47
-        desc: Heavy guns now do double damage.
-        heavy_damage_mul: 2
+        - level: 1
+          desc: Thanks to practice and conditioning, heavy guns do 20% more damage.
+          heavy_damage_mul: 1.2
+        - level: 11
+          desc: Heavy guns now do 40% more damage, and have improved hip fire accuracy.
+          heavy_damage_mul: 1.4
+          heavy_hip_fire_accuracy_add: 0.15
+        - level: 21
+          desc: Heavy guns now do 60% more damage. Hip fire accuracy is increased even more.
+          heavy_damage_mul: 1.6
+          heavy_hip_fire_accuracy_add: 0.3
+        - level: 35
+          desc: Heavy guns now do 80% more damage and have a chance to stagger your opponent.
+          heavy_damage_mul: 1.8
+          heavy_stagger_chance: 0.15
+        - level: 47
+          desc: Heavy guns now do double damage.
+          heavy_damage_mul: 2
     - name: Strong Back
       ranks:
-      - level: 1
-        desc: What are you, part pack mule? Gain +25 to carry weight.
-        carry_weight_add: 25
-      - level: 10
-        desc: You now have +50 to carry weight.
-        carry_weight_add: 50
-      - level: 20
-        desc: When overencumbered, you can use Action Points to run.
-        overencumbered_run_cost_mul: 1
-      - level: 30
-        desc: (Normal Mode) When overencumbered, you can fast travel. (Survival Mode) When overencumbered, you will not become injured.
-        overencumbered_freedom: true
-      - level: 40
-        desc: Far Harbor (add-on)	When overencumbered, running costs 50% less action points.
-        overencumbered_run_cost_mul: 0.5
+        - level: 1
+          desc: What are you, part pack mule? Gain +25 to carry weight.
+          carry_weight_add: 25
+        - level: 10
+          desc: You now have +50 to carry weight.
+          carry_weight_add: 50
+        - level: 20
+          desc: When overencumbered, you can use Action Points to run.
+          overencumbered_run_cost_mul: 1
+        - level: 30
+          desc: (Normal Mode) When overencumbered, you can fast travel. (Survival Mode) When overencumbered, you will not become injured.
+          overencumbered_freedom: true
+        - level: 40
+          desc: Far Harbor (add-on)	When overencumbered, running costs 50% less action points.
+          overencumbered_run_cost_mul: 0.5
     - name: Steady Aim
       ranks:
-      - level: 1
-        desc: Stay on target! Hip-fire accuracy is improved when firing any gun.
-        hip_fire_accuracy_add: 0.15
-      - level: 28
-        desc: Hip-fire accuracy is improved even more when firing any gun.
-        hip_fire_accuracy_add: 0.3
-      - level: 49
-        desc: Nuka-World (add-on)	Hip-fire damage is improved when firing any gun.
-        hip_fire_damage_mul: 1.15
+        - level: 1
+          desc: Stay on target! Hip-fire accuracy is improved when firing any gun.
+          hip_fire_accuracy_add: 0.15
+        - level: 28
+          desc: Hip-fire accuracy is improved even more when firing any gun.
+          hip_fire_accuracy_add: 0.3
+        - level: 49
+          desc: Nuka-World (add-on)	Hip-fire damage is improved when firing any gun.
+          hip_fire_damage_mul: 1.15
     - name: Basher
       ranks:
-      - level: 1
-        desc: Get up close and personal! Gun bashing does 25% more damage.
-      - level: 5
-        desc: Gun bashing now does 50% more damage and possibly cripples your opponent.
-      - level: 14
-        desc: Gun bashing now does 75% more damage and has an increased chance to cripple your opponent.
-      - level: 26
-        desc: Gun bashing does double damage and has an increased chance to cripple your opponent. It may also inflict a Critical Hit.
+        - level: 1
+          desc: Get up close and personal! Gun bashing does 25% more damage.
+        - level: 5
+          desc: Gun bashing now does 50% more damage and possibly cripples your opponent.
+        - level: 14
+          desc: Gun bashing now does 75% more damage and has an increased chance to cripple your opponent.
+        - level: 26
+          desc: Gun bashing does double damage and has an increased chance to cripple your opponent. It may also inflict a Critical Hit.
+    - name: Rooted
+      ranks:
+        - level: 1
+          desc: You're part tree! While standing still, you gain +25 Damage Resistance and your melee and unarmed attacks deal 25% more damage.
+        - level: 22
+          desc: While standing still, you now gain +50 Damage Resistance and your melee and unarmed attacks deal 50% more damage.
+        - level: 43
+          desc: While standing still, you may automatically disarm enemies that use melee weapons against you.
+    - name: Pain Train
+      ranks:
+        - level: 1
+          desc: Choo Choo! All aboard! While wearing Power Armor, sprinting into enemies hurts and staggers them. (Robots and oversized enemies are immune to the stagger.)
+        - level: 24
+          desc: Sprinting into enemies while wearing Power Armor now causes severe damage and a more powerful stagger. (Robots and oversized enemies are immune to the stagger.)
+        - level: 50
+          desc: Sprinting into enemies while wearing Power Armor now causes massive damage and knocks them down. Impact landing near enemies inflicts even more damage.
