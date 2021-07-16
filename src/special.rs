@@ -77,8 +77,9 @@ impl FromStr for PerkDef {
                     let name = name.to_lowercase();
                     (
                         def,
-                        (strsim::jaro_winkler(s, &name) + strsim::normalized_levenshtein(s, &name))
-                            / 2.0,
+                        (strsim::jaro_winkler(s, &name) * 2.0
+                            + strsim::normalized_levenshtein(s, &name))
+                            / 3.0,
                     )
                 })
             })
@@ -158,7 +159,7 @@ effects!(
     (can_slam_heads_off, bool, false),
     (armor_mod_rank, u8, 0),
     (melee_mod_rank, u8, 0),
-    (carry_weight_add, u8, 0),
+    (carry_weight_add, u16, 0),
     (overencumbered_run_cost_mul, Option<f32>, None),
     (overencumbered_freedom, bool, false),
     (heavy_damage_mul, f32, 1.0),

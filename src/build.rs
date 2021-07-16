@@ -77,13 +77,19 @@ impl fmt::Display for Build {
         writeln!(
             f,
             "{}",
-            format!("Hits per Crit: {}", self.hits_per_crit()).bright_yellow()
+            format!("{:.0}% XP", self.experience_mul() * 100.0).bright_green()
         )?;
         writeln!(
             f,
             "{}",
-            format!("{}% XP", self.experience_mul() * 100.0).bright_green()
+            format!("Melee Damage: {:.0}%", self.melee_damage_mul() * 100.0).bright_magenta()
         )?;
+        writeln!(
+            f,
+            "{}",
+            format!("Hits per Crit: {}", self.hits_per_crit()).bright_yellow()
+        )?;
+        writeln!(f, "Carry Weight: {}", self.carry_weight())?;
         writeln!(
             f,
             "Buy Prices: {} / Sell Prices: {}",
@@ -176,8 +182,15 @@ impl Build {
         1.0 / self.buying_price_mul()
     }
     pub fn experience_mul(&self) -> f64 {
-        let intelligence = self.total_base_points(SpecialStat::Intelligence);
+        let intelligence = self.total_points(SpecialStat::Intelligence);
         1.0 + intelligence as f64 * 0.03
+    }
+    pub fn carry_weight(&self) -> u16 {
+        200 + self.total_points(SpecialStat::Strength) as u16 * 10
+            + self.effect_iter(PerkDef::carry_weight_add).sum::<u16>()
+    }
+    pub fn melee_damage_mul(&self) -> f32 {
+        1.0 + self.total_points(SpecialStat::Strength) as f32 * 0.1
     }
     pub fn total_base_points(&self, stat: SpecialStat) -> u8 {
         self.special[&stat]

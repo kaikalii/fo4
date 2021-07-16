@@ -1,0 +1,4 @@
+- Add survival setting
+- Add bobblehead and magazine perks
+- Add more effects
+- Add equipment

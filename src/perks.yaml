@@ -351,8 +351,10 @@ special:
       ranks:
         - level: 1
           desc: Who needs friends, anyway? When adventuring without a companion, you take 15% less damage and carry weight increases by 50.
+          carry_weight_add: 50
         - level: 17
           desc: When adventuring without a companion, you take 30% less damage and carry weight increases by 100.
+          carry_weight_add: 100
         - level: 40
           desc: When adventuring without a companion, you do 25% more damage.
         - level: 50
