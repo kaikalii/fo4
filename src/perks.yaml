@@ -141,3 +141,94 @@ special:
           desc: Sprinting into enemies while wearing Power Armor now causes severe damage and a more powerful stagger. (Robots and oversized enemies are immune to the stagger.)
         - level: 50
           desc: Sprinting into enemies while wearing Power Armor now causes massive damage and knocks them down. Impact landing near enemies inflicts even more damage.
+  Perception:
+    - name: Pickpocket
+      ranks:
+        - level: 1
+          desc: Your quick hands and sticky fingers make picking pockets 25% easier.
+        - level: 6
+          desc: Picking pockets is now 50% easier. You can place a live grenade in a person's inventory.
+        - level: 17
+          desc: Picking pockets is now 75% easier, and you can steal equipped weapons.
+        - level: 30
+          desc: Picking pockets is now twice as easy, and you can steal equipped items.
+    - name: Rifleman
+      ranks:
+        - level: 1
+          desc: Keep your distance long and your kill-count high. Attacks with non-automatic rifles do 20% more damage.
+        - level: 9
+          desc: Attacks with non-automatic rifles do 40% more damage and ignore 15% of a target's armor.
+        - level: 18
+          desc: Attacks with non-automatic rifles do 60% more damage and ignore 20% of a target's armor.
+        - level: 31
+          desc: Attacks with non-automatic rifles do 80% more damage and ignore 25% of a target's armor. They also have a slight chance of crippling a limb.
+        - level: 46
+          desc: Attacks with non-automatic rifles do double damage and ignore 30% of a target's armor. They also have a slightly higher chance of crippling a limb.
+    - name: Awareness
+      ranks:
+        - level: 1
+          desc: To defeat your enemies, know their weaknesses! You can view a target's specific damage resistances in V.A.T.S.
+        - level: 14
+          desc: Knowing their weaknesses lets you attack more efficiently. 5% increase to hit chance and damage dealt to VATS targets.
+    - name: Locksmith
+      ranks:
+        - level: 1
+          desc: Your nimble fingers allow you to pick Advanced locks.
+        - level: 7
+          desc: You can pick Expert locks.
+        - level: 18
+          desc: You can pick Master locks.
+        - level: 41
+          desc: Your bobby pins never break during lockpicking.
+    - name: Demolition Expert
+      ranks:
+        - level: 1
+          desc: The bigger the boom, the better! Your explosives do 25% more damage, and you can craft explosives at any chemistry station.
+        - level: 10
+          desc: Your explosives do 50% more damage, and grenades gain a throwing arc.
+        - level: 22
+          desc: Your explosives do 75% more damage and affect a larger area.
+        - level: 34
+          desc: Your explosives now do double damage. Mines and grenades shot in V.A.T.S explode for double damage, too.
+    - name: Night Person
+      ranks:
+        - level: 1
+          desc: You are a creature of the night! Gain +2 to Intelligence and Perception between the hours of 6:00 p.m. and 6:00 a.m.
+        - level: 25
+          desc: You now have +3 to Intelligence and Perception between the hours of 6:00 p.m. and 6:00 a.m., and night vision when sneaking.
+        - level: 37
+          desc: You have 30 extra health between the hours of 6:00 PM and 6:00 AM.
+    - name: Refractor
+      ranks:
+        - level: 1
+          desc: You must be part mirror! Instantly gain +10 Energy Resistance.
+        - level: 11
+          desc: You now have +20 Energy Resistance.
+        - level: 21
+          desc: You now have +30 Energy Resistance.
+        - level: 35
+          desc: You now have +40 Energy Resistance.
+        - level: 42
+          desc: u now have +50 Energy Resistance.
+    - name: Sniper
+      ranks:
+        - level: 1
+          desc: It's all about focus. You have improved control and can hold your breath longer when aiming with scopes.
+        - level: 13
+          desc: Non-automatic, scoped rifles have a 15% chance of knocking down your target.
+        - level: 26
+          desc: Non-automatic, scoped rifles gain +25% accuracy to head shot in V.A.T.S.
+    - name: Penetrator
+      ranks:
+        - level: 1
+          desc: There's no place to hide! In V.A.T.S you can target an enemy's body parts that are blocked by cover, with a decrease in accuracy.
+        - level: 28
+          desc: In V.A.T.S when you target an enemy's body parts that are blocked by cover, there is no decrease in accuracy.
+    - name: Concentrated Fire 
+      ranks:
+        - level: 1
+          desc: Stay Focused! In V.A.T.S every attack on the same body part gains +10% accuracy.
+        - level: 26
+          desc: In V.A.T.S every attack on the same body part gains +15% accuracy.
+        - level: 50
+          desc: In V.A.T.S every attack on the same body part gains +20% accuracy and does 20% more damage.

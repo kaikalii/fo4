@@ -12,7 +12,7 @@ use anyhow::bail;
 use clap::Clap;
 
 use build::*;
-use colored::Colorize;
+use colored::{Color, Colorize};
 use once_cell::sync::Lazy;
 use special::*;
 
@@ -84,7 +84,7 @@ fn main() {
                             let mut words: Vec<&str> = Vec::new();
                             for word in rank.description.get(gender).split_whitespace() {
                                 if words.iter().map(|s| s.len() + 1).sum::<usize>() + word.len()
-                                    >= width - 1
+                                    >= width - 2
                                 {
                                     print!("  ");
                                     for word in words.drain(..) {
@@ -102,6 +102,39 @@ fn main() {
                                 println!();
                             }
                         }
+                        continue;
+                    }
+                    Command::Special { stat } => {
+                        clear_terminal();
+                        println!("{}\n", build);
+                        let gender = build.gender.unwrap_or_default();
+                        let total_points = build.total_base_points(stat);
+                        println!("{} ({})", stat.to_string().bright_yellow(), total_points);
+                        for points in 1..=10 {
+                            let perk_id = PerkId::Special { stat, points };
+                            let perk = PERKS.get_by_left(&perk_id).expect("Unknown perk");
+                            let this_perk_points = build.perks.get(&perk_id);
+                            let color = if points <= total_points {
+                                if this_perk_points.is_some() {
+                                    Color::BrightWhite
+                                } else {
+                                    Color::White
+                                }
+                            } else {
+                                Color::BrightBlack
+                            };
+                            println!(
+                                "{:2}: {} {}",
+                                points,
+                                perk.name.get(gender).color(color),
+                                if let Some(points) = this_perk_points {
+                                    format!("({})", points)
+                                } else {
+                                    String::new()
+                                }
+                            );
+                        }
+                        println!();
                         continue;
                     }
                     Command::Reset => {
@@ -203,6 +236,8 @@ enum Command {
     Remove { perk: PerkDef },
     #[clap(about = "Display a perk")]
     Perk { perk: PerkDef },
+    #[clap(about = "Display all the perks for a S.P.E.C.I.A.L. stat")]
+    Special { stat: SpecialStat },
     #[clap(about = "Reset the build")]
     Reset,
     #[clap(about = "Set the build's name")]
