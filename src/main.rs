@@ -32,12 +32,12 @@ fn main() {
         }
     } else {
         clear_terminal();
-        println!("{}\n", Command::try_parse_from(&[""]).unwrap_err());
         Build::default()
     };
 
     Lazy::force(&PERKS);
     println!("\n{}", build);
+    println!("{}\n", "Type \"help\" for usage information".bright_blue());
 
     for line in stdin().lock().lines().filter_map(|res| res.ok()) {
         let args: Vec<&str> = once("fo4").chain(line.split_whitespace()).collect();
@@ -84,7 +84,7 @@ fn main() {
                             let mut words: Vec<&str> = Vec::new();
                             for word in rank.description.get(gender).split_whitespace() {
                                 if words.iter().map(|s| s.len() + 1).sum::<usize>() + word.len()
-                                    >= width - 2
+                                    >= width
                                 {
                                     print!("  ");
                                     for word in words.drain(..) {
@@ -179,10 +179,10 @@ fn main() {
                     Command::Exit => break,
                 };
                 clear_terminal();
+                println!("{}\n", build);
                 if !message.is_empty() {
                     println!("{}\n", message.bright_green());
                 }
-                println!("{}\n", build);
                 if let Err(e) = res {
                     println!("{}\n", e.to_string().bright_red());
                 }
@@ -193,6 +193,9 @@ fn main() {
                 match e.kind {
                     clap::ErrorKind::ValueValidation => {
                         println!("{}\n", e.info[2].bright_red())
+                    }
+                    clap::ErrorKind::MissingArgumentOrSubcommand => {
+                        println!("{}\n", "Type \"help\" for usage information".bright_blue());
                     }
                     _ => println!("{}\n", e),
                 }

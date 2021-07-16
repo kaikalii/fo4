@@ -232,3 +232,90 @@ special:
           desc: In V.A.T.S every attack on the same body part gains +15% accuracy.
         - level: 50
           desc: In V.A.T.S every attack on the same body part gains +20% accuracy and does 20% more damage.
+  Endurance:
+    - name: Toughness
+      ranks:
+        - level: 1
+          desc: If nothing else, you can take a beating! Instantly gain +10 Damage Resistance.
+        - level: 9
+          desc: You now have +20 damage resistance.
+        - level: 18
+          desc: You now have +30 damage resistance.
+        - level: 31
+          desc: You now have +40 damage resistance.
+        - level: 46
+          desc: You now have +50 damage resistance.
+    - name: Lead Belly
+      ranks:
+        - level: 1
+          desc: Your digestive tract has adjusted to the weirdness of the Wasteland! Take less radiation from eating or drinking.
+        - level: 6
+          desc: You take even less radiation from eating or drinking.
+        - level: 17
+          desc: You take no radiation from eating or drinking.
+    - name: Lifegiver
+      ranks:
+        - level: 1
+          desc: You embody wellness! Instantly gain +20 maximum Health.
+        - level: 8
+          desc: You instantly gain another +20 maximum Health.
+        - level: 20
+          desc: You instantly gain another +20 maximum Health, and slowly regenerate lost Health.
+    - name: Chem Resistant
+      ranks:
+        - level: 1
+          desc: All the rush without the hassle! You're 50% less likely to get addicted when consuming Chems
+        - level: 22
+          desc: You gain complete immunity to chem addiction.
+    - name:
+        male: Aquayboy
+        female: Aquagirl
+      ranks:
+        - level: 1
+          desc: Water is your ally. You no longer take radiation damage from swimming, and can breathe underwater.
+        - level: 21
+          desc: You become totally undetectable while submerged.
+    - name: Rad Resistant
+      ranks:
+        - level: 1
+          desc: Exposure to the Wasteland has made you more resilient, instantly granting +10 Radiation Resistance.
+        - level: 13
+          desc: You now have +20 Radiation Resistance.
+        - level: 26
+          desc: You now have +30 Radiation Resistance.
+        - level: 35
+          desc: You now have +40 Radiation Resistance.
+    - name: Adamantium Skeleton
+      ranks:
+        - level: 1
+          desc: Your skeleton has been infused with indestructible metal, reducing limb damage by 30%.
+        - level: 13
+          desc: Your limb damage is now reduced by 60%.
+        - level: 26
+          desc: Your limb damage is completely eliminated.
+    - name: Cannibal
+      ranks:
+        - level: 1
+          desc: Feast on mortal flesh to heal your wounds! Eating human corpses restores Health.
+        - level: 19
+          desc: Eating Ghoul or Super Mutant corpses restores Health.
+        - level: 38
+          desc: Eating human, Ghoul or Super Mutant corpses now restores a significant amount of Health.
+    - name: Ghoulish
+      ranks:
+        - level: 1
+          desc: Sure, you're still human - on the outside! Radiation now regenerates your lost Health.
+        - level: 24
+          desc: Radiation now regenerates even more of your lost Health.
+        - level: 48
+          desc: Radiation now regenerates even more of your lost Health, and some Feral Ghouls will randomly become friendly.
+        - level: 50
+          desc: Rad damage will now begin to slowly heal, restoring health in the process.
+    - name: Solar Powered
+      ranks:
+        - level: 1
+          desc: Catch some rays! Gain +2 to Strength and Endurance between the hours of 6:00 a.m. and 6:00 p.m.
+        - level: 27
+          desc: Sunlight slowly heals your radiation damage.
+        - level: 50
+          desc: Sunlight slowly regenerates your lost Health.
