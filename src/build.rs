@@ -31,7 +31,16 @@ impl Default for Build {
         Build {
             name: None,
             gender: None,
-            special: SpecialStat::ALL.iter().map(|stat| (*stat, 1)).collect(),
+            special: PERKS
+                .left_values()
+                .filter_map(|id| {
+                    if let PerkId::Special { stat, .. } = id {
+                        Some((*stat, 1))
+                    } else {
+                        None
+                    }
+                })
+                .collect(),
             bobbleheads: BTreeSet::new(),
             special_book: None,
             perks: BTreeMap::new(),
@@ -128,7 +137,7 @@ impl Build {
         Self::INITIAL_ASSIGNABLE_POINTS.saturating_sub(self.assigned_special_points())
     }
     pub fn assigned_special_points(&self) -> u8 {
-        self.special.values().sum::<u8>() - 7
+        self.special.values().sum::<u8>() - self.special.keys().count() as u8
     }
     pub fn assigned_perk_points(&self) -> u8 {
         self.perks.values().sum::<u8>()
@@ -246,5 +255,75 @@ impl Build {
         let bytes = fs::read(path)?;
         let build: Build = serde_yaml::from_slice(&bytes)?;
         Ok(build)
+    }
+    pub fn print_special(&self, stat: SpecialStat) {
+        let gender = self.gender.unwrap_or_default();
+        let total_points = self.total_base_points(stat);
+        println!(
+            "{} ({})",
+            stat.to_string().bright_yellow(),
+            self.points_string(stat)
+        );
+        for points in 1..=10 {
+            let perk_id = PerkId::Special { stat, points };
+            let perk = PERKS.get_by_left(&perk_id).expect("Unknown perk");
+            let this_perk_points = self.perks.get(&perk_id);
+            let color = if points <= total_points {
+                if this_perk_points.is_some() {
+                    Color::BrightWhite
+                } else {
+                    Color::White
+                }
+            } else {
+                Color::BrightBlack
+            };
+            println!(
+                "{:2}: {} {}",
+                points,
+                perk.name.get(gender).color(color),
+                if let Some(points) = this_perk_points {
+                    format!("({})", points)
+                } else {
+                    String::new()
+                }
+            );
+        }
+    }
+    pub fn print_perk(&self, perk: &PerkDef) {
+        let gender = self.gender.unwrap_or_default();
+        println!("{}", perk.name.get(gender).bright_yellow());
+        let perk_id = PERKS.get_by_right(perk).expect("Unknown perk");
+        let my_rank = self.perks.get(&perk_id).copied().unwrap_or(0);
+        for (i, rank) in perk.ranks.iter().enumerate() {
+            let (rank_color, desc_color) = if my_rank > i as u8 {
+                (Color::BrightCyan, Color::BrightWhite)
+            } else {
+                (Color::White, Color::White)
+            };
+            println!(
+                "{} {}",
+                format!("Rank {}", i + 1).color(rank_color),
+                format!("(Level {})", rank.required_level).bright_black(),
+            );
+            let width = terminal_size::terminal_size().map_or(80, |(width, _)| width.0 as usize);
+            let mut words: Vec<&str> = Vec::new();
+            for word in rank.description.get(gender).split_whitespace() {
+                if words.iter().map(|s| s.len() + 1).sum::<usize>() + word.len() >= width {
+                    print!("  ");
+                    for word in words.drain(..) {
+                        print!("{} ", word.color(desc_color));
+                    }
+                    println!();
+                }
+                words.push(word);
+            }
+            if !words.is_empty() {
+                print!("  ");
+                for word in words {
+                    print!("{} ", word.color(desc_color));
+                }
+                println!();
+            }
+        }
     }
 }

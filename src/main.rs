@@ -12,7 +12,7 @@ use anyhow::bail;
 use clap::Clap;
 
 use build::*;
-use colored::{Color, Colorize};
+use colored::Colorize;
 use once_cell::sync::Lazy;
 use special::*;
 
@@ -71,72 +71,19 @@ fn main() {
                     Command::Perk { perk } => {
                         clear_terminal();
                         println!("{}\n", build);
-                        let gender = build.gender.unwrap_or_default();
-                        println!("{}", perk.name.get(gender).bright_yellow());
-                        for (i, rank) in perk.ranks.iter().enumerate() {
-                            println!(
-                                "{} {}",
-                                format!("Rank {}", i + 1).bright_cyan(),
-                                format!("(Level {})", rank.required_level).bright_black(),
-                            );
-                            let width = terminal_size::terminal_size()
-                                .map_or(80, |(width, _)| width.0 as usize);
-                            let mut words: Vec<&str> = Vec::new();
-                            for word in rank.description.get(gender).split_whitespace() {
-                                if words.iter().map(|s| s.len() + 1).sum::<usize>() + word.len()
-                                    >= width
-                                {
-                                    print!("  ");
-                                    for word in words.drain(..) {
-                                        print!("{} ", word);
-                                    }
-                                    println!();
-                                }
-                                words.push(word);
-                            }
-                            if !words.is_empty() {
-                                print!("  ");
-                                for word in words {
-                                    print!("{} ", word);
-                                }
-                                println!();
-                            }
-                        }
+                        build.print_perk(&perk);
                         continue;
                     }
                     Command::Special { stat } => {
                         clear_terminal();
-                        println!("{}\n", build);
-                        let gender = build.gender.unwrap_or_default();
-                        let total_points = build.total_base_points(stat);
-                        println!(
-                            "{} ({})",
-                            stat.to_string().bright_yellow(),
-                            build.points_string(stat)
-                        );
-                        for points in 1..=10 {
-                            let perk_id = PerkId::Special { stat, points };
-                            let perk = PERKS.get_by_left(&perk_id).expect("Unknown perk");
-                            let this_perk_points = build.perks.get(&perk_id);
-                            let color = if points <= total_points {
-                                if this_perk_points.is_some() {
-                                    Color::BrightWhite
-                                } else {
-                                    Color::White
-                                }
-                            } else {
-                                Color::BrightBlack
-                            };
-                            println!(
-                                "{:2}: {} {}",
-                                points,
-                                perk.name.get(gender).color(color),
-                                if let Some(points) = this_perk_points {
-                                    format!("({})", points)
-                                } else {
-                                    String::new()
-                                }
-                            );
+                        println!("{}", build);
+                        if let Some(stat) = stat {
+                            build.print_special(stat);
+                        } else {
+                            for stat in build.special.keys() {
+                                build.print_special(*stat);
+                                println!();
+                            }
                         }
                         println!();
                         continue;
@@ -201,6 +148,13 @@ fn main() {
                     clap::ErrorKind::MissingArgumentOrSubcommand => {
                         println!("{}\n", "Type \"help\" for usage information".bright_blue());
                     }
+                    clap::ErrorKind::DisplayHelp => {
+                        let message = e.to_string();
+                        println!(
+                            "COMMANDS:{}",
+                            message.split("SUBCOMMANDS:").nth(1).unwrap_or(&message)
+                        );
+                    }
                     _ => println!("{}\n", e),
                 }
             }
@@ -243,15 +197,15 @@ enum Command {
     Remove { perk: PerkDef },
     #[clap(about = "Display a perk")]
     Perk { perk: PerkDef },
-    #[clap(about = "Display all the perks for a S.P.E.C.I.A.L. stat")]
-    Special { stat: SpecialStat },
+    #[clap(about = "Display all the perks for a S.P.E.C.I.A.L. stat(s)")]
+    Special { stat: Option<SpecialStat> },
     #[clap(about = "Reset the build")]
     Reset,
     #[clap(about = "Set the build's name")]
     Name { name: String },
-    #[clap(about = "Set the build's gender")]
+    #[clap(about = "Set the build's gender (affects perk names)")]
     Gender { gender: Gender },
-    #[clap(about = "The which stat to allocate the special book to")]
+    #[clap(about = "Set which stat to allocate the special book to")]
     Book { stat: Option<SpecialStat> },
     #[clap(about = "Save the build")]
     Save { name: Option<String> },
