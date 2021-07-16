@@ -67,7 +67,11 @@ fn main() {
                     } => build
                         .set(stat, value, bobblehead)
                         .map(|_| format!("Set {:?} to {}", stat, value)),
-                    Command::Add { perk_and_rank } => catch(|| {
+                    Command::Add {
+                        perk: head,
+                        tail_and_rank: mut perk_and_rank,
+                    } => catch(|| {
+                        perk_and_rank.insert(0, head);
                         let (perk, rank) = join_perk_def_and_rank(&perk_and_rank)?;
                         let rank = rank.unwrap_or_else(|| perk.max_rank()).min(
                             perk.ranks
@@ -81,22 +85,32 @@ fn main() {
                             format!("Added {} rank {}", name, rank)
                         })
                     }),
-                    Command::Remove { perk } => catch(|| {
+                    Command::Remove {
+                        perk: head,
+                        tail: mut perk,
+                    } => catch(|| {
+                        perk.insert(0, head);
                         let perk = join_perk_def(&perk)?;
                         build.remove_perk(&perk)?;
                         let name = &perk.name[build.gender.unwrap_or_default()];
                         Ok(format!("Removed {}", name))
                     }),
-                    Command::Perk { perk } => match join_perk_def(&perk) {
-                        Ok(perk) => {
-                            clear_terminal();
-                            println!("{}", build);
-                            build.print_perk(&perk);
-                            println!();
-                            continue;
+                    Command::Perk {
+                        perk: head,
+                        tail: mut perk,
+                    } => {
+                        perk.insert(0, head);
+                        match join_perk_def(&perk) {
+                            Ok(perk) => {
+                                clear_terminal();
+                                println!("{}", build);
+                                build.print_perk(&perk);
+                                println!();
+                                continue;
+                            }
+                            Err(e) => Err(e),
                         }
-                        Err(e) => Err(e),
-                    },
+                    }
                     Command::Special { stat } => {
                         clear_terminal();
                         println!("{}", build);
@@ -268,11 +282,14 @@ enum Command {
         bobblehead: bool,
     },
     #[clap(display_order = 1, about = "Add a perk by name and rank")]
-    Add { perk_and_rank: Vec<String> },
+    Add {
+        perk: String,
+        tail_and_rank: Vec<String>,
+    },
     #[clap(display_order = 1, about = "Remove a perk")]
-    Remove { perk: Vec<String> },
+    Remove { perk: String, tail: Vec<String> },
     #[clap(display_order = 1, about = "Display a perk")]
-    Perk { perk: Vec<String> },
+    Perk { perk: String, tail: Vec<String> },
     #[clap(
         display_order = 1,
         about = "Display all perks for a S.P.E.C.I.A.L. stat(s)"
