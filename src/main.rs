@@ -19,6 +19,10 @@ use special::*;
 fn main() {
     let app = App::parse();
 
+    if app.no_color || !colored::control::ShouldColorize::from_env().should_colorize() {
+        colored::control::set_override(false);
+    }
+
     let mut build = if let Some(path) = app.path {
         match Build::load(path) {
             Ok(build) => build,
@@ -178,6 +182,8 @@ where
 #[derive(Clap)]
 struct App {
     path: Option<PathBuf>,
+    #[clap(long = "nocolor", about = "Run without terminal colors")]
+    no_color: bool,
 }
 
 #[derive(Debug, Clap)]
