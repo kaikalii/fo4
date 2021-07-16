@@ -427,9 +427,9 @@ special:
         - level: 1
           desc: Is there a doctor in the house? Stimpaks restore 40% of lost Health, and RadAway removes 40% of radiation.
         - level: 18
-          desc: Stimpaks restore 60% of lost Health, and RadAway removes 60% of radiation
+          desc: Stimpaks restore 60% of lost Health, and RadAway removes 60% of radiation.
         - level: 30
-          desc: Stimpaks restore 80% of lost Health, and RadAway removes 80% of radiation
+          desc: Stimpaks restore 80% of lost Health, and RadAway removes 80% of radiation.
         - level: 49
           desc: Stimpaks and RadAway restore all lost health and radiation, and work much more quickly.
     - name: Gun Nut
@@ -437,15 +437,15 @@ special:
         - level: 1
           desc: Shoot first, kill first, with access to base level and Rank 1 gun mods.
         - level: 13
-          desc: You gain access to Rank 2 gun mods
+          desc: You gain access to Rank 2 gun mods.
         - level: 25
-          desc: You gain access to Rank 3 gun mods
+          desc: You gain access to Rank 3 gun mods.
         - level: 39
-          desc: You gain access to Rank 4 gun mods
+          desc: You gain access to Rank 4 gun mods.
     - name: Hacker
       ranks:
         - level: 1
-          desc: Knowledge of cutting-edge computer encryption allows you to hack Advanced terminals
+          desc: Knowledge of cutting-edge computer encryption allows you to hack Advanced terminals.
         - level: 9
           desc: You can hack Expert terminals.
         - level: 21
@@ -520,7 +520,7 @@ special:
     - name: Commando
       ranks:
         - level: 1
-          desc: Rigorous combat training means automatic weapons do 20% more damage
+          desc: Rigorous combat training means automatic weapons do 20% more damage.
         - level: 11
           desc: Attacks with automatic weapons do 40% more damage, with improved hip fire accuracy.
         - level: 21
