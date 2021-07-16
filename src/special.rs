@@ -53,6 +53,34 @@ impl fmt::Display for SpecialStat {
 pub enum PerkId {
     Special { stat: SpecialStat, points: u8 },
     Bobblehead(usize),
+    Magazine(usize),
+}
+
+impl PerkId {
+    pub fn kind(&self) -> PerkKind {
+        match self {
+            PerkId::Special { stat, .. } => PerkKind::Special(*stat),
+            PerkId::Bobblehead(_) => PerkKind::Bobblehead,
+            PerkId::Magazine(_) => PerkKind::Magazine,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum PerkKind {
+    Special(SpecialStat),
+    Bobblehead,
+    Magazine,
+}
+
+impl fmt::Display for PerkKind {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            PerkKind::Special(stat) => write!(f, "{:?}", stat),
+            PerkKind::Bobblehead => write!(f, "Bobbleheads"),
+            PerkKind::Magazine => write!(f, "Magazines"),
+        }
+    }
 }
 
 fn similarity(a: impl AsRef<str>, b: impl AsRef<str>) -> f64 {
@@ -64,12 +92,12 @@ fn similarity(a: impl AsRef<str>, b: impl AsRef<str>) -> f64 {
 #[derive(Debug, Clone, Deserialize)]
 pub struct PerkDef {
     pub name: MaybeGendered<String>,
-    pub ranks: Vec<Rank>,
+    pub ranks: Ranks,
 }
 
 impl PerkDef {
     pub fn max_rank(&self) -> u8 {
-        self.ranks.len() as u8
+        self.ranks.max_rank()
     }
 }
 
@@ -132,6 +160,41 @@ fn default_required_level() -> u8 {
     1
 }
 
+#[derive(Debug, Clone, Deserialize)]
+#[serde(untagged)]
+pub enum Ranks {
+    UniformCumulative {
+        count: u8,
+        #[serde(alias = "desc")]
+        description: FullyVariable<String>,
+        #[serde(default, skip_serializing_if = "Vec::is_empty", flatten)]
+        effects: Effects,
+    },
+    Single {
+        #[serde(alias = "desc")]
+        description: FullyVariable<String>,
+        #[serde(default, skip_serializing_if = "Vec::is_empty", flatten)]
+        effects: Effects,
+    },
+    VaryingCumulative(Vec<Rank>),
+}
+
+impl Ranks {
+    pub fn max_rank(&self) -> u8 {
+        match self {
+            Ranks::Single { .. } => 1,
+            Ranks::UniformCumulative { count, .. } => *count as u8,
+            Ranks::VaryingCumulative(ranks) => ranks.len() as u8,
+        }
+    }
+    pub fn required_level(&self, rank: u8) -> u8 {
+        match self {
+            Ranks::VaryingCumulative(ranks) => ranks[rank as usize - 1].required_level,
+            _ => 1,
+        }
+    }
+}
+
 macro_rules! effects {
     ($(($name:ident, $ty:ty, $default:expr)),* $(,)?) => {
         #[derive(Debug, Clone, Deserialize)]
@@ -144,8 +207,25 @@ macro_rules! effects {
         impl PerkDef {
             $(
                 #[allow(dead_code)]
-                pub fn $name(&self, rank: u8) -> $ty {
-                    self.ranks.iter().take(rank as usize).rev().find_map(|rank| rank.effects.$name).unwrap_or($default)
+                pub fn $name<F>(&self, rank: u8, f: F) -> $ty where F: Fn($ty, $ty) -> $ty {
+                    match &self.ranks {
+                        Ranks::Single {effects, ..} => if let Some(val) = effects.$name {
+                            f($default, val)
+                        } else {
+                            $default
+                        }
+                        Ranks::UniformCumulative { count, effects, .. } => if let Some(val) = effects.$name {
+                            (0..*count).map(|_| val).fold($default, f)
+                        } else {
+                            $default
+                        }
+                        Ranks::VaryingCumulative(ranks) => ranks
+                            .iter()
+                            .take(rank as usize)
+                            .rev()
+                            .find_map(|rank| rank.effects.$name.map(|val| f($default, val)))
+                            .unwrap_or($default)
+                    }
                 }
             )*
         }
@@ -370,6 +450,7 @@ pub enum SkillBobblehead {
 struct AllPerksRep {
     special: BTreeMap<SpecialStat, Vec<PerkDef>>,
     bobbleheads: BTreeMap<MaybeGendered<String>, Rank>,
+    magazines: BTreeMap<String, Ranks>,
 }
 
 pub static PERKS: Lazy<BiBTreeMap<PerkId, PerkDef>> = Lazy::new(|| {
@@ -397,7 +478,19 @@ pub static PERKS: Lazy<BiBTreeMap<PerkId, PerkDef>> = Lazy::new(|| {
             PerkId::Bobblehead(i),
             PerkDef {
                 name,
-                ranks: vec![rank],
+                ranks: Ranks::Single {
+                    description: rank.description,
+                    effects: rank.effects,
+                },
+            },
+        );
+    }
+    for (i, (name, ranks)) in rep.magazines.into_iter().enumerate() {
+        perks.insert(
+            PerkId::Magazine(i),
+            PerkDef {
+                name: name.into(),
+                ranks,
             },
         );
     }

@@ -2,6 +2,7 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     fmt, fs,
     iter::repeat,
+    ops::Add,
     path::{Path, PathBuf},
 };
 
@@ -9,7 +10,9 @@ use anyhow::bail;
 use colored::{Color, Colorize};
 use serde::{Deserialize, Serialize};
 
-use crate::special::{Bobblehead, Difficulty, Gender, PerkDef, PerkId, Rank, SpecialStat, PERKS};
+use crate::special::{
+    Bobblehead, Difficulty, FullyVariable, Gender, PerkDef, PerkId, Ranks, SpecialStat, PERKS,
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Build {
@@ -124,13 +127,23 @@ impl fmt::Display for Build {
         }
         if !self.perks.is_empty() {
             writeln!(f)?;
+            let mut last_kind = None;
             for (id, rank) in &self.perks {
+                let kind = id.kind();
+                if Some(kind) != last_kind {
+                    writeln!(f, "{}", kind.to_string().bright_yellow())?;
+                    last_kind = Some(kind);
+                }
+                let def = PERKS.get_by_left(id).expect("Unknown perk");
                 writeln!(
                     f,
-                    "{} {}",
-                    PERKS.get_by_left(id).expect("Unknown perk").name
-                        [self.gender.unwrap_or_default()],
-                    rank
+                    "  {}{}",
+                    def.name[self.gender.unwrap_or_default()],
+                    if def.max_rank() > 1 {
+                        format!(" {}", rank)
+                    } else {
+                        String::new()
+                    }
                 )?;
             }
         }
@@ -146,7 +159,7 @@ impl Build {
     pub fn base_health(&self) -> f32 {
         let endurance = self.total_points(SpecialStat::Endurance) as f32;
         let base = 80.0 + endurance * 5.0;
-        let from_perks = self.effect_iter(PerkDef::hp_add).sum::<f32>();
+        let from_perks = self.effect_iter(PerkDef::hp_add, Add::add);
         base + from_perks
     }
     pub fn health(&self) -> f32 {
@@ -156,7 +169,7 @@ impl Build {
     pub fn base_agility(&self) -> f32 {
         let agility = self.total_points(SpecialStat::Agility) as f32;
         let base = 60.0 + agility * 10.0;
-        let from_perks = self.effect_iter(PerkDef::ap_add).sum::<f32>();
+        let from_perks = self.effect_iter(PerkDef::ap_add, Add::add);
         base + from_perks
     }
     pub fn hits_per_crit(&self) -> u8 {
@@ -180,7 +193,7 @@ impl Build {
     }
     pub fn buying_price_mul(&self) -> f32 {
         ((3.5 - self.total_points(SpecialStat::Charisma) as f32 * 0.15)
-            / (1.0 + self.effect_iter(PerkDef::buy_price_sub).sum::<f32>()))
+            / (1.0 + self.effect_iter(PerkDef::buy_price_sub, Add::add)))
         .max(1.2)
     }
     pub fn selling_price_mul(&self) -> f32 {
@@ -197,7 +210,7 @@ impl Build {
             200
         };
         let from_strength = self.total_points(SpecialStat::Strength) as u16 * 10;
-        let from_perks = self.effect_iter(PerkDef::carry_weight_add).sum::<u16>();
+        let from_perks = self.effect_iter(PerkDef::carry_weight_add, Add::add);
         base + from_strength + from_perks
     }
     pub fn melee_damage_mul(&self) -> f32 {
@@ -245,13 +258,23 @@ impl Build {
             }
         )
     }
-    pub fn effect_iter<'a, F, T>(&'a self, f: F) -> impl Iterator<Item = T> + 'a
+    pub fn effect_iter<'a, F, T, G>(&'a self, get: F, fold: G) -> T
     where
-        F: Fn(&PerkDef, u8) -> T + 'a,
+        F: Fn(&'a PerkDef, u8, G) -> T + 'a,
+        G: Fn(T, T) -> T + Clone,
     {
-        self.perks
-            .iter()
-            .map(move |(id, rank)| f(PERKS.get_by_left(id).expect("Unknown perk"), *rank))
+        let fold_clone = fold.clone();
+        let mut iter = self.perks.iter().map(|(id, rank)| {
+            get(
+                PERKS.get_by_left(id).expect("Unknown perk"),
+                *rank,
+                fold.clone(),
+            )
+        });
+        let first = iter
+            .next()
+            .unwrap_or_else(|| get(PERKS.right_values().next().unwrap(), 1, fold_clone.clone()));
+        iter.fold(first, fold_clone)
     }
     pub fn remaining_initial_points(&self) -> u8 {
         Self::INITIAL_ASSIGNABLE_POINTS.saturating_sub(self.assigned_special_points())
@@ -270,8 +293,11 @@ impl Build {
             .perks
             .iter()
             .map(|(id, rank)| {
-                PERKS.get_by_left(id).expect("Unknown perk").ranks[*rank as usize - 1]
-                    .required_level
+                PERKS
+                    .get_by_left(id)
+                    .expect("Unknown perk")
+                    .ranks
+                    .required_level(*rank)
             })
             .max()
             .unwrap_or(1);
@@ -303,26 +329,52 @@ impl Build {
         }
         Ok(())
     }
-    pub fn add_perk(&mut self, def: &PerkDef, rank: u8) -> anyhow::Result<()> {
-        if rank > def.ranks.len() as u8 {
-            bail!(
-                "{} only has {} ranks",
-                def.name[self.gender.unwrap_or_default()],
-                def.ranks.len()
-            )
-        } else if rank == 0 {
-            self.remove_perk(def)
-        } else if let Some(id) = PERKS.get_by_right(def) {
-            self.perks.insert(*id, rank);
-            if let PerkId::Special { stat, points } = id {
-                while self.total_base_points(*stat) < *points {
-                    *self.special.get_mut(stat).unwrap() += 1;
-                }
+    fn add_perk_impl(&mut self, id: PerkId, rank: u8) {
+        self.perks.insert(id, rank);
+        if let PerkId::Special { stat, points } = id {
+            while self.total_base_points(stat) < points {
+                *self.special.get_mut(&stat).unwrap() += 1;
             }
-            Ok(())
+        }
+    }
+    pub fn add_perk(&mut self, def: &PerkDef, rank: u8) -> anyhow::Result<()> {
+        let id = if let Some(id) = PERKS.get_by_right(def) {
+            *id
         } else {
             bail!("Unknown perk")
+        };
+        if rank == 0 {
+            self.remove_perk(def)?;
+        } else {
+            match &def.ranks {
+                Ranks::Single { .. } => {
+                    self.add_perk_impl(id, 1);
+                }
+                Ranks::UniformCumulative { count, .. } => {
+                    if rank > *count {
+                        bail!(
+                            "{} only has {} ranks",
+                            def.name[self.gender.unwrap_or_default()],
+                            count
+                        )
+                    } else {
+                        self.add_perk_impl(id, rank);
+                    }
+                }
+                Ranks::VaryingCumulative(ranks) => {
+                    if rank > ranks.len() as u8 {
+                        bail!(
+                            "{} only has {} ranks",
+                            def.name[self.gender.unwrap_or_default()],
+                            ranks.len()
+                        )
+                    } else {
+                        self.add_perk_impl(id, rank);
+                    }
+                }
+            }
         }
+        Ok(())
     }
     pub fn remove_perk(&mut self, def: &PerkDef) -> anyhow::Result<()> {
         if let Some(id) = PERKS.get_by_right(def) {
@@ -431,33 +483,49 @@ impl Build {
     pub fn print_perk(&self, perk: &PerkDef) {
         let gender = self.gender.unwrap_or_default();
         let difficulty = self.difficulty.unwrap_or_default();
-        println!("{}", perk.name[gender].bright_yellow());
+        print!("{}", perk.name[gender].bright_yellow());
         let perk_id = PERKS.get_by_right(perk).expect("Unknown perk");
         let my_rank = self.perks.get(&perk_id).copied().unwrap_or(0);
-        let print_rank = |i: Option<usize>, rank: &Rank| {
+        let print_rank = |i: Option<usize>,
+                          required_level: u8,
+                          description: &FullyVariable<String>| {
             let (rank_color, desc_color) = if i.map_or(false, |i| my_rank > i as u8) {
                 (Color::BrightCyan, Color::BrightWhite)
             } else {
                 (Color::Cyan, Color::White)
             };
             if let Some(i) = i {
-                println!(
-                    "{} {}",
-                    format!("Rank {}", i + 1).color(rank_color),
-                    format!("(Level {})", rank.required_level).bright_black(),
-                );
+                print!("{}", format!("Rank {}", i + 1).color(rank_color),);
+                if required_level > 1 {
+                    println!("{}", format!(" (Level {})", required_level).bright_black())
+                } else {
+                    println!();
+                }
             }
             let width = terminal_size::terminal_size().map_or(80, |(width, _)| width.0 as usize);
             let mut words: Vec<&str> = Vec::new();
-            for word in rank.description[difficulty][gender].split_whitespace() {
-                if words.iter().map(|s| s.len() + 1).sum::<usize>() + word.len() >= width - 1 {
+            for word in description[difficulty][gender]
+                .split_inclusive('\n')
+                .flat_map(|s| s.split(|c| [' ', '\t', '\r'].contains(&c)))
+                .filter(|s| !s.is_empty())
+            {
+                let newline = word.ends_with('\n');
+                let word = word.trim();
+                if newline {
+                    words.push(word);
+                }
+                if newline
+                    || words.iter().map(|s| s.len() + 1).sum::<usize>() + word.len() >= width - 2
+                {
                     print!("  ");
                     for word in words.drain(..) {
                         print!("{} ", word.color(desc_color));
                     }
                     println!();
                 }
-                words.push(word);
+                if !newline {
+                    words.push(word);
+                }
             }
             if !words.is_empty() {
                 print!("  ");
@@ -467,11 +535,25 @@ impl Build {
                 println!();
             }
         };
-        if perk.ranks.len() == 1 {
-            print_rank(None, &perk.ranks[0]);
-        } else {
-            for (i, rank) in perk.ranks.iter().enumerate() {
-                print_rank(Some(i), rank);
+        match &perk.ranks {
+            Ranks::Single { description, .. } => {
+                println!();
+                print_rank(None, 1, description);
+            }
+            Ranks::UniformCumulative {
+                count, description, ..
+            } => {
+                println!(" {}", format!("({}/{})", my_rank, count).bright_black());
+                print_rank(None, 1, description);
+            }
+            Ranks::VaryingCumulative(ranks) => {
+                println!(
+                    " {}",
+                    format!("({}/{})", my_rank, ranks.len()).bright_black()
+                );
+                for (i, rank) in ranks.iter().enumerate() {
+                    print_rank(Some(i), rank.required_level, &rank.description);
+                }
             }
         }
     }

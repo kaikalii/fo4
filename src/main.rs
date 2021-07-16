@@ -194,6 +194,7 @@ struct App {
 }
 
 #[derive(Debug, Clap)]
+#[allow(clippy::large_enum_variant)]
 enum Command {
     #[clap(about = "Set a special stat")]
     Set {

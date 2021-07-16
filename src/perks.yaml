@@ -717,9 +717,140 @@ bobbleheads:
     desc: Permanently gives you an extra guess when hacking terminals
   Small Guns: 
     desc: Permanently increases critical damage with ballistic weapons by 25%
-  Sneak: 
+  Sneak (Bobblehead): 
     desc: Permanently makes the player character 10% harder to detect
   Speech: 
     desc: Permanently gives all vendors 100 bottle caps extra when bartering
   Unarmed: 
     desc: Permanently increases critical damage with unarmed attacks by 25%
+magazines:
+  Astoundingly Awesome 1:
+    desc: Regenerate 1 point of health per minute.
+  Astoundingly Awesome 2:
+    desc: Do +5% damage with scoped weapons.
+  Astoundingly Awesome 3:
+    desc: Take 5% less damage from robots.
+  Astoundingly Awesome 4:
+    desc: Do +5% damage with the Alien Blaster.
+  Astoundingly Awesome 5:
+    desc: Gain +5 Poison Resistance.
+  Astoundingly Awesome 6:
+    desc: Do +5% damage against Mirelurks.
+  Astoundingly Awesome 7:
+    desc: Do +5% damage at night.
+  Astoundingly Awesome 8:
+    desc: Gain +5 Action Points.
+    ap_add: 5
+  Astoundingly Awesome 9:
+    desc: Do +5% damage with the Cryolator.
+  Astoundingly Awesome 10:
+    desc: Gain +5 Radiation Resistance.
+  Astoundingly Awesome 11:
+    desc: RadAway heals +5% radiation damage.
+  Astoundingly Awesome 12:
+    desc: Your canine companion permanently takes 10% less damage.
+  Astoundingly Awesome 13:
+    desc: Do +5% damage against Ghouls.
+  Astoundingly Awesome 14:
+    desc: Do +5% damage against Super Mutants.
+  Astoundingly Awesome 15:
+    desc: Your canine companion takes 10% less damage.
+  Grognak the Barbarian:
+    count: 10
+    desc: Barbarian	Critical Hits with unarmed and melee attacks do +5% damage.
+  Guns and Bullets:
+    count: 10
+    desc: Ballistic weapons do +5% critical damage.
+  La Coiffe:
+    count: 2
+    desc: Extra hairstyles.
+  Live & Love 1:
+    desc: Companions gain +10 health.
+  Live & Love 2:
+    desc: Companions do +5% damage.
+  Live & Love 3:
+    desc: Companions have +10 carry weight.
+  Live & Love 4:
+    desc: Gain +25% XP from persuading women.
+  Live & Love 5:
+    desc: Gain +1 Luck from alcohol when adventuring with a companion.
+  Live & Love 6:
+    desc: Companions gain +5 Damage Resistance and Energy Resistance.
+  Live & Love 7:
+    desc: Gain +25% XP from persuading men.
+  Live & Love 8:
+    desc: Gain +5% XP while adventuring with a companion.
+  Live & Love 9:
+    desc: Robot companions inflict +5% damage.
+  Live & Love 10:
+    desc: Companions do 5% more damage.
+  Massachusetts Surgical Journal:
+    count: 9
+    desc: Massachusetts Surgery	Inflict +2% limb damage.
+  Picket Fences 1:
+    desc: You are now able to build picket fencing at settlement workshops
+  Picket Fences 2:
+    desc: You are now able to build high tech lights at settlement workshops
+  Picket Fences 3:
+    desc: You are now able to build new statues at settlement workshops
+  Picket Fences 4:
+    desc: You are now able to build potted plants at settlement workshops
+  Picket Fences	5:
+    desc: You are now able to build patio furniture at settlement workshops
+  Tales of a Junktown Jerky Vendor:
+    count: 8
+    desc: Get better prices when buying from vendors.
+    buy_price_sub: 0.03
+  Tesla Science Magazine:
+    count: 9
+    desc: Energy weapons inflict +5% critical damage.
+  Tumblers Today:
+    count: 5
+    desc: Gain a bonus to lockpicking.
+  U.S. Covert Operations Manual:
+    count: 10
+    desc: You are more difficult to detect while sneaking.
+  Unstoppables:
+    count: 5
+    desc: Gain a +1% chance of avoiding all damage from an attack.
+  Wasteland Survival 1:
+    desc: Heal 50% more from fruits and vegetables.
+  Wasteland Survival 2:
+    desc: Take 5% less damage from insects.
+  Wasteland Survival 3:
+    desc: Heal +50% from irradiated packaged food and drink.
+  Wasteland Survival 4:
+    desc: Access new decoration items in workshop settlements.
+  Wasteland Survival 5:
+    desc: Diamond City is now permanently marked on your map.
+  Wasteland Survival 6:
+    desc: +10% discount from food and drink vendors.
+  Wasteland Survival 7:
+    desc: Swim +25% faster.
+  Wasteland Survival 8:
+    desc: Take 5% less damage from melee attacks.
+  Wasteland Survival 9:
+    desc: Collect extra meat from animal kills.
+  Islander's Almanac (Pincer Dodge):
+    desc: Take 5% less damage from Mirelurk melee attacks.
+  Islander's Almanac (Precision Hunting):
+    desc: 5% higher VATS chance against animals the player is in combat with.
+  Islander's Almanac (Far Harbor Sightseer's Guide):
+    desc: Marks multiple locations on the map.
+  Islander's Almanac (Children of Atom Exposé):
+    desc: Receive 10% less damage from radiation-based attacks.
+  Islander's Almanac (Recipe Roundup):
+    desc: Unlocks sludge based recipes at chemistry stations.
+  SCAV! (#1, The Terrible Truce):
+    desc: Increases speech challenge success chance by 10%.
+  SCAV! (#2, Fear the Knife King):
+    desc: +25% Combat Knife and Switchblade damage.
+  SCAV! (#3, Mutant Fists of Stephie):
+    desc: Knuckles	+10% hand to hand weapon damage.
+  SCAV! (#4, Nuka Brahmin Stampede):
+    desc: +5% explosives damage.
+  SCAV! (#5, That No-Caps Rage):
+    desc: |
+      +1 Strength & +1 Endurance if you have <10,000 caps.
+      +2 Strength & +2 Endurance if you have <1,000 caps.
+      +3 Strength & +3 Endurance if you have <100 caps.
