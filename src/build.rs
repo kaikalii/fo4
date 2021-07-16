@@ -106,7 +106,6 @@ impl fmt::Display for Build {
             format!("{:.0}%", self.buying_price_mul() * 100.0,).bright_white(),
             format!("{:.0}%", self.selling_price_mul() * 100.0).bright_white(),
         )?;
-        writeln!(f, "Max Settlement Pop: {}", self.max_settlers())?;
         writeln!(f)?;
         for &stat in self.special.keys() {
             let total_points = self.total_base_points(stat);
@@ -188,9 +187,6 @@ impl Build {
             30..=62 => 2,
             _ => 1,
         }
-    }
-    pub fn max_settlers(&self) -> u8 {
-        10 + self.total_points(SpecialStat::Charisma)
     }
     pub fn buying_price_mul(&self) -> f32 {
         ((3.5 - self.total_points(SpecialStat::Charisma) as f32 * 0.15)
