@@ -123,6 +123,20 @@ fn main() {
                         println!();
                         continue;
                     }
+                    Command::Factions => {
+                        clear_terminal();
+                        println!("{}", build);
+                        build.print_perk_names(PerkKind::Faction);
+                        println!();
+                        continue;
+                    }
+                    Command::OtherPerks => {
+                        clear_terminal();
+                        println!("{}", build);
+                        build.print_perk_names(PerkKind::Other);
+                        println!();
+                        continue;
+                    }
                     Command::Reset => {
                         build.reset();
                         Ok("Build reset!".into())
@@ -250,6 +264,10 @@ enum Command {
     Magazines,
     #[clap(about = "Display all companion perks")]
     Companions,
+    #[clap(about = "Display all faction perks")]
+    Factions,
+    #[clap(about = "Display all other perks")]
+    OtherPerks,
     #[clap(about = "Reset the build")]
     Reset,
     #[clap(about = "Set the build's name")]

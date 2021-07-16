@@ -883,3 +883,24 @@ companions:
     desc: The Damage Resistance and Energy Resistance of animals and sea creatures is reduced by 25%.
   Porter Gage (Lessons in Blood):
     desc: The player character gains +5% more XP per kill and +10 Damage Resistance.
+factions:
+  Crusader of Atom:
+    desc: Provides a bonus to your weapon's damage. The higher your rads, the higher the bonus.
+  Destroyer of Acadia:
+    desc: When your health falls below 20%, do 4x damage for 30 seconds.
+  Far Harbor Survivalist:
+    desc: Gain +5 to all resistances.
+  Inquisitor of Atom:
+    desc: Provides a bonus to your weapon's damage. The higher your rads, the higher the bonus.
+  Protector of Acadia:
+    desc: When your health falls below 20%, gain 1000 damage resist and energy resist for 30 seconds.
+  Ace Operator:
+    desc: Your stealth is increased while in shadows to 90% visibility and you deal 25% more damage with silenced weapons.
+  Chosen Disciple:
+    desc: Kills made by your melee weapons will restore some of your Action Points.
+  Pack Alpha:
+    desc: Your damage resistance is greatly increased (25% less damage) and you deal more damage (25%) while unarmed or using melee weapons.
+  Wasteland Warlord:
+    - desc: Unlocks new structures at all Raider outposts.
+    - desc: Unlocks additional structures at all Raider outposts.
+    - desc: You rule the wastes! Your outposts can construct all Raider structures!

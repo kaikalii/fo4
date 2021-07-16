@@ -55,6 +55,8 @@ pub enum PerkId {
     Bobblehead(usize),
     Magazine(usize),
     Companion(usize),
+    Faction(usize),
+    Other(usize),
 }
 
 impl PerkId {
@@ -64,6 +66,8 @@ impl PerkId {
             PerkId::Bobblehead(_) => PerkKind::Bobblehead,
             PerkId::Magazine(_) => PerkKind::Magazine,
             PerkId::Companion(_) => PerkKind::Companion,
+            PerkId::Faction(_) => PerkKind::Faction,
+            PerkId::Other(_) => PerkKind::Other,
         }
     }
 }
@@ -74,6 +78,8 @@ pub enum PerkKind {
     Bobblehead,
     Magazine,
     Companion,
+    Faction,
+    Other,
 }
 
 impl fmt::Display for PerkKind {
@@ -83,6 +89,8 @@ impl fmt::Display for PerkKind {
             PerkKind::Bobblehead => write!(f, "Bobbleheads"),
             PerkKind::Magazine => write!(f, "Magazines"),
             PerkKind::Companion => write!(f, "Companions"),
+            PerkKind::Faction => write!(f, "Factions"),
+            PerkKind::Other => write!(f, "Other"),
         }
     }
 }
@@ -474,6 +482,9 @@ struct AllPerksRep {
     bobbleheads: BTreeMap<MaybeGendered<String>, Rank>,
     magazines: BTreeMap<String, Ranks>,
     companions: BTreeMap<String, Ranks>,
+    factions: BTreeMap<String, Ranks>,
+    #[serde(default)]
+    other: BTreeMap<String, Ranks>,
 }
 
 pub static PERKS: Lazy<BiBTreeMap<PerkId, PerkDef>> = Lazy::new(|| {
@@ -520,6 +531,24 @@ pub static PERKS: Lazy<BiBTreeMap<PerkId, PerkDef>> = Lazy::new(|| {
     for (i, (name, ranks)) in rep.companions.into_iter().enumerate() {
         perks.insert(
             PerkId::Companion(i),
+            PerkDef {
+                name: name.into(),
+                ranks,
+            },
+        );
+    }
+    for (i, (name, ranks)) in rep.factions.into_iter().enumerate() {
+        perks.insert(
+            PerkId::Faction(i),
+            PerkDef {
+                name: name.into(),
+                ranks,
+            },
+        );
+    }
+    for (i, (name, ranks)) in rep.other.into_iter().enumerate() {
+        perks.insert(
+            PerkId::Other(i),
             PerkDef {
                 name: name.into(),
                 ranks,

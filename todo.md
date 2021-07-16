@@ -1,3 +1,2 @@
-- Add faction perks
 - Add more effects
 - Add equipment
