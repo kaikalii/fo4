@@ -109,7 +109,11 @@ fn main() {
                         println!("{}\n", build);
                         let gender = build.gender.unwrap_or_default();
                         let total_points = build.total_base_points(stat);
-                        println!("{} ({})", stat.to_string().bright_yellow(), total_points);
+                        println!(
+                            "{} ({})",
+                            stat.to_string().bright_yellow(),
+                            build.points_string(stat)
+                        );
                         for points in 1..=10 {
                             let perk_id = PerkId::Special { stat, points };
                             let perk = PERKS.get_by_left(&perk_id).expect("Unknown perk");

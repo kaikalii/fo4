@@ -56,7 +56,7 @@ impl fmt::Display for Build {
             writeln!(f, "Remaining Points: {}", self.remaining_initial_points())?;
         }
         writeln!(f)?;
-        for (&stat, &points) in &self.special {
+        for &stat in self.special.keys() {
             let total_points = self.total_base_points(stat);
             let color = match total_points {
                 0..=1 => Color::BrightBlack,
@@ -68,36 +68,26 @@ impl fmt::Display for Build {
             };
             write!(
                 f,
-                "{:>12} {}{}{}",
+                "{:>12} {}",
                 stat.to_string(),
-                points.to_string().color(color),
-                if self.bobbleheads.contains(&Bobblehead::Special(stat)) {
-                    " + bobblehead"
-                } else {
-                    ""
-                }
-                .color(color),
-                if self.special_book == Some(stat) {
-                    " + S.P.E.C.I.A.L. book"
-                } else {
-                    ""
-                }
-                .color(color),
+                self.points_string(stat).color(color),
             )?;
             writeln!(f)?;
         }
-        writeln!(f)?;
-        for (id, rank) in &self.perks {
-            writeln!(
-                f,
-                "{} {}",
-                PERKS
-                    .get_by_left(id)
-                    .expect("Unknown perk")
-                    .name
-                    .get(self.gender.unwrap_or_default()),
-                rank
-            )?;
+        if !self.perks.is_empty() {
+            writeln!(f)?;
+            for (id, rank) in &self.perks {
+                writeln!(
+                    f,
+                    "{} {}",
+                    PERKS
+                        .get_by_left(id)
+                        .expect("Unknown perk")
+                        .name
+                        .get(self.gender.unwrap_or_default()),
+                    rank
+                )?;
+            }
         }
         Ok(())
     }
@@ -117,6 +107,22 @@ impl Build {
             } else {
                 0
             }
+    }
+    pub fn points_string(&self, stat: SpecialStat) -> String {
+        format!(
+            "{}{}{}",
+            self.special[&stat].to_string(),
+            if self.bobbleheads.contains(&Bobblehead::Special(stat)) {
+                " + bobblehead"
+            } else {
+                ""
+            },
+            if self.special_book == Some(stat) {
+                " + S.P.E.C.I.A.L. book"
+            } else {
+                ""
+            }
+        )
     }
     pub fn remaining_initial_points(&self) -> u8 {
         Self::INITIAL_ASSIGNABLE_POINTS.saturating_sub(self.assigned_special_points())
