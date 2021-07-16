@@ -1,3 +1,3 @@
-- Add bobblehead and magazine perks
+- Add companion perks
 - Add more effects
 - Add equipment

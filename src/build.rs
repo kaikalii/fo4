@@ -282,11 +282,15 @@ impl Build {
     pub fn assigned_special_points(&self) -> u8 {
         self.special.values().sum::<u8>() - self.special.keys().count() as u8
     }
+    pub fn level_up_assigned_special_points(&self) -> u8 {
+        self.assigned_special_points()
+            .saturating_sub(Self::INITIAL_ASSIGNABLE_POINTS)
+    }
     pub fn assigned_perk_points(&self) -> u8 {
         self.perks.values().sum::<u8>()
     }
-    pub fn assigned_points(&self) -> u8 {
-        self.assigned_special_points() + self.assigned_perk_points()
+    pub fn level_up_assigned_points(&self) -> u8 {
+        self.level_up_assigned_special_points() + self.assigned_perk_points()
     }
     pub fn required_level(&self) -> u8 {
         let for_rank_reqs = self
@@ -301,9 +305,7 @@ impl Build {
             })
             .max()
             .unwrap_or(1);
-        let for_spent_points = self
-            .assigned_points()
-            .saturating_sub(Self::INITIAL_ASSIGNABLE_POINTS);
+        let for_spent_points = self.level_up_assigned_points() + 1;
         for_rank_reqs.max(for_spent_points)
     }
     pub fn set(

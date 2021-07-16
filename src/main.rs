@@ -17,6 +17,8 @@ use once_cell::sync::Lazy;
 use special::*;
 
 fn main() {
+    Lazy::force(&PERKS);
+
     let app = App::parse();
 
     if app.no_color || !colored::control::ShouldColorize::from_env().should_colorize() {
@@ -39,9 +41,10 @@ fn main() {
         Build::default()
     };
 
-    Lazy::force(&PERKS);
     println!("\n{}", build);
     println!("{}\n", "Type \"help\" for usage information".bright_blue());
+
+    let mut level_limit: Option<u8> = None;
 
     for line in stdin().lock().lines().filter_map(|res| res.ok()) {
         let args: Vec<&str> = once("fo4").chain(line.split_whitespace()).collect();
@@ -55,8 +58,12 @@ fn main() {
                     } => build
                         .set(stat, value, bobblehead)
                         .map(|_| format!("Set {:?} to {}", stat, value)),
-                    Command::Add { perk, rank } => catch(|| {
-                        let rank = rank.unwrap_or_else(|| perk.max_rank());
+                    Command::Add { perk_and_rank } => catch(|| {
+                        let (perk, rank) = join_perk_def_and_rank(&perk_and_rank)?;
+                        let rank = rank.unwrap_or_else(|| perk.max_rank()).min(
+                            perk.ranks
+                                .highest_rank_within_level(level_limit.unwrap_or(u8::MAX)),
+                        );
                         build.add_perk(&perk, rank)?;
                         let name = &perk.name[build.gender.unwrap_or_default()];
                         Ok(if rank == 0 {
@@ -66,17 +73,21 @@ fn main() {
                         })
                     }),
                     Command::Remove { perk } => catch(|| {
+                        let perk = join_perk_def(&perk)?;
                         build.remove_perk(&perk)?;
                         let name = &perk.name[build.gender.unwrap_or_default()];
                         Ok(format!("Removed {}", name))
                     }),
-                    Command::Perk { perk } => {
-                        clear_terminal();
-                        println!("{}", build);
-                        build.print_perk(&perk);
-                        println!();
-                        continue;
-                    }
+                    Command::Perk { perk } => match join_perk_def(&perk) {
+                        Ok(perk) => {
+                            clear_terminal();
+                            println!("{}", build);
+                            build.print_perk(&perk);
+                            println!();
+                            continue;
+                        }
+                        Err(e) => Err(e),
+                    },
                     Command::Special { stat } => {
                         clear_terminal();
                         println!("{}", build);
@@ -126,6 +137,14 @@ fn main() {
                     Command::Difficulty { difficulty } => {
                         build.difficulty = Some(difficulty);
                         Ok(format!("Difficulty set to {:?}", difficulty))
+                    }
+                    Command::LevelLimit { level } => {
+                        level_limit = level;
+                        Ok(if let Some(level) = level {
+                            format!("Level limit set to {}", level)
+                        } else {
+                            "Removed level limit".into()
+                        })
                     }
                     Command::Save { name } => catch(|| {
                         if let Some(name) = name {
@@ -204,11 +223,11 @@ enum Command {
         bobblehead: bool,
     },
     #[clap(about = "Add a perk by name and rank")]
-    Add { perk: PerkDef, rank: Option<u8> },
+    Add { perk_and_rank: Vec<String> },
     #[clap(about = "Remove a perk")]
-    Remove { perk: PerkDef },
+    Remove { perk: Vec<String> },
     #[clap(about = "Display a perk")]
-    Perk { perk: PerkDef },
+    Perk { perk: Vec<String> },
     #[clap(about = "Display all the perks for a S.P.E.C.I.A.L. stat(s)")]
     Special { stat: Option<SpecialStat> },
     #[clap(about = "Display all the perk bobbleheads")]
@@ -223,10 +242,42 @@ enum Command {
     Book { stat: Option<SpecialStat> },
     #[clap(about = "Set the difficulty (affects carry weight)", alias = "diff")]
     Difficulty { difficulty: Difficulty },
+    #[clap(about = "Limit the maximum required level for added perks")]
+    LevelLimit { level: Option<u8> },
     #[clap(about = "Save the build")]
     Save { name: Option<String> },
     #[clap(about = "Open the folder where builds are saved")]
     Builds,
     #[clap(about = "Exit this tool")]
     Exit,
+}
+
+fn join_perk_def(parts: &[String]) -> anyhow::Result<PerkDef> {
+    parts.iter().map(String::as_str).collect::<String>().parse()
+}
+
+fn join_perk_def_and_rank(parts: &[String]) -> anyhow::Result<(PerkDef, Option<u8>)> {
+    if parts.len() <= 1 {
+        parts
+            .get(0)
+            .map(String::as_str)
+            .unwrap_or_default()
+            .parse::<PerkDef>()
+            .map(|def| (def, None))
+    } else if let Ok(last) = parts.last().unwrap().parse::<u8>() {
+        let sub = &parts[..(parts.len() - 1)];
+        if sub
+            .last()
+            .and_then(|part| part.parse::<u8>().ok())
+            .is_some()
+        {
+            join_perk_def(sub).map(|def| (def, Some(last)))
+        } else if let Ok(def) = join_perk_def(sub) {
+            Ok((def, Some(last)))
+        } else {
+            join_perk_def(parts).map(|def| (def, None))
+        }
+    } else {
+        join_perk_def(parts).map(|def| (def, None))
+    }
 }

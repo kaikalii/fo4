@@ -193,6 +193,16 @@ impl Ranks {
             _ => 1,
         }
     }
+    pub fn highest_rank_within_level(&self, level: u8) -> u8 {
+        match self {
+            Ranks::Single { .. } => 1,
+            Ranks::UniformCumulative { count, .. } => *count,
+            Ranks::VaryingCumulative(ranks) => ranks
+                .iter()
+                .filter(|rank| rank.required_level <= level)
+                .count() as u8,
+        }
+    }
 }
 
 macro_rules! effects {
