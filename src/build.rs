@@ -421,7 +421,7 @@ impl Build {
             let width = terminal_size::terminal_size().map_or(80, |(width, _)| width.0 as usize);
             let mut words: Vec<&str> = Vec::new();
             for word in rank.description.get(gender).split_whitespace() {
-                if words.iter().map(|s| s.len() + 1).sum::<usize>() + word.len() >= width {
+                if words.iter().map(|s| s.len() + 1).sum::<usize>() + word.len() >= width - 1 {
                     print!("  ");
                     for word in words.drain(..) {
                         print!("{} ", word.color(desc_color));
