@@ -160,7 +160,7 @@ impl Build {
     pub fn base_health(&self) -> f32 {
         let endurance = self.total_points(SpecialStat::Endurance) as f32;
         let base = 80.0 + endurance * 5.0;
-        let from_perks = self.effect_iter(PerkDef::hp_add, Add::add);
+        let from_perks = self.fold_effect(PerkDef::hp_add, Add::add);
         base + from_perks
     }
     pub fn health(&self) -> f32 {
@@ -170,7 +170,7 @@ impl Build {
     pub fn base_agility(&self) -> f32 {
         let agility = self.total_points(SpecialStat::Agility) as f32;
         let base = 60.0 + agility * 10.0;
-        let from_perks = self.effect_iter(PerkDef::ap_add, Add::add);
+        let from_perks = self.fold_effect(PerkDef::ap_add, Add::add);
         base + from_perks
     }
     pub fn hits_per_crit(&self) -> u8 {
@@ -194,7 +194,7 @@ impl Build {
     }
     pub fn buying_price_mul(&self) -> f32 {
         ((3.5 - self.total_points(SpecialStat::Charisma) as f32 * 0.15)
-            / (1.0 + self.effect_iter(PerkDef::buy_price_sub, Add::add)))
+            / (1.0 + self.fold_effect(PerkDef::buy_price_sub, Add::add)))
         .max(1.2)
     }
     pub fn selling_price_mul(&self) -> f32 {
@@ -211,11 +211,12 @@ impl Build {
             200
         };
         let from_strength = self.total_points(SpecialStat::Strength) as u16 * 10;
-        let from_perks = self.effect_iter(PerkDef::carry_weight_add, Add::add);
+        let from_perks = self.fold_effect(PerkDef::carry_weight_add, Add::add);
         base + from_strength + from_perks
     }
     pub fn melee_damage_mul(&self) -> f32 {
         1.0 + self.total_points(SpecialStat::Strength) as f32 * 0.1
+            + self.fold_effect(PerkDef::melee_damage_add, Add::add)
     }
     pub fn total_base_points(&self, stat: SpecialStat) -> u8 {
         self.special[&stat]
@@ -259,7 +260,7 @@ impl Build {
             }
         )
     }
-    pub fn effect_iter<'a, F, T, G>(&'a self, get: F, fold: G) -> T
+    pub fn fold_effect<'a, F, T, G>(&'a self, get: F, fold: G) -> T
     where
         F: Fn(&'a PerkDef, u8, G) -> T + 'a,
         G: Fn(T, T) -> T + Clone,

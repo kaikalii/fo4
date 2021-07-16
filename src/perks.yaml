@@ -4,89 +4,56 @@ special:
       ranks:
         - level: 1
           desc: Channel your chi to unleash devastating fury! Punching attacks do 20% more damage to your opponent.
-          unarmed_damage_mul: 1.2
         - level: 9
           desc: Punching attacks now do 40% more damage and can disarm your opponent.
-          unarmed_damage_mul: 1.4
-          unarmed_disarm_chance: 0.15
         - level: 18
           desc: Punching attacks now do 60% more damage. Unarmed Power Attacks have a chance to cripple one of your opponent's limbs.
-          unarmed_damage_mul: 1.6
-          unarmed_power_attack_cripple_chance: 0.15
         - level: 31
           desc: Punching attacks now do 80% more damage. Unarmed Power Attacks have an increased chance to cripple one of your opponent's limbs.
-          unarmed_damage_mul: 1.8
-          unarmed_power_attack_cripple_chance: 0.3
         - level: 46
           desc: Punching attacks now do double damage. Criticals in V.A.T.S. will paralyze your opponent.
-          unarmed_damage_mul: 2
-          unarmed_crits_paralyze: true
     - name: Big Leagues
       ranks:
         - level: 1
           desc: Swing for the fences! Do 20% more melee weapon damage.
-          melee_damage_mul: 1.2
         - level: 7
           desc: You now do 40% more melee weapon damage and gain a chance to disarm your opponent.
-          melee_damage_mul: 1.4
-          melee_disarm_chance: 0.15
         - level: 15
           desc: You now do 60% more melee weapon damage and gain an increased chance to disarm your opponent.
-          melee_damage_mul: 1.6
-          melee_disarm_chance: 0.3
         - level: 27
           desc: You now do 80% more melee weapon damage and hit all targets in front of you.
-          melee_damage_mul: 1.8
-          melee_cleaves: true
         - level: 42
           desc: You now do double damage with a melee weapon, and gain a chance to cripple your opponent, or grand slam their head clean off!
-          melee_damage_mul: 2
-          can_slam_heads_off: true
     - name: Armorer
       ranks:
         - level: 1
           desc: Protect yourself from the dangers of the Wasteland with access to base level and Rank 1 armor mods.
-          armor_mod_rank: 1
         - level: 13
           desc: You gain access to Rank 2 armor mods.
-          armor_mod_rank: 2
         - level: 25
           desc: You gain access to Rank 3 armor mods.
-          armor_mod_rank: 3
         - level: 39
           desc: You gain access to Rank 4 armor mods.
-          armor_mod_rank: 4
     - name: Blacksmith
       ranks:
         - level: 1
           desc: Fire up the forge and gain access to base level and Rank 1 melee weapon mods.
-          melee_mod_rank: 1
         - level: 16
           desc: You gain access to Rank 2 melee weapon mods.
-          melee_mod_rank: 2
         - level: 29
           desc: You gain access to Rank 3 melee weapon mods.
-          melee_mod_rank: 3
     - name: Heavy Gunner
       ranks:
         - level: 1
           desc: Thanks to practice and conditioning, heavy guns do 20% more damage.
-          heavy_damage_mul: 1.2
         - level: 11
           desc: Heavy guns now do 40% more damage, and have improved hip fire accuracy.
-          heavy_damage_mul: 1.4
-          heavy_hip_fire_accuracy_add: 0.15
         - level: 21
           desc: Heavy guns now do 60% more damage. Hip fire accuracy is increased even more.
-          heavy_damage_mul: 1.6
-          heavy_hip_fire_accuracy_add: 0.3
         - level: 35
           desc: Heavy guns now do 80% more damage and have a chance to stagger your opponent.
-          heavy_damage_mul: 1.8
-          heavy_stagger_chance: 0.15
         - level: 47
           desc: Heavy guns now do double damage.
-          heavy_damage_mul: 2
     - name: Strong Back
       ranks:
         - level: 1
@@ -97,26 +64,20 @@ special:
           carry_weight_add: 50
         - level: 20
           desc: When overencumbered, you can use Action Points to run.
-          overencumbered_run_cost_mul: 1
         - level: 30
           desc: 
             normal: When overencumbered, you can fast travel.
             survival: When overencumbered, you will not become injured.
-          overencumbered_freedom: true
         - level: 40
           desc: When overencumbered, running costs 50% less action points.
-          overencumbered_run_cost_mul: 0.5
     - name: Steady Aim
       ranks:
         - level: 1
           desc: Stay on target! Hip-fire accuracy is improved when firing any gun.
-          hip_fire_accuracy_add: 0.15
         - level: 28
           desc: Hip-fire accuracy is improved even more when firing any gun.
-          hip_fire_accuracy_add: 0.3
         - level: 49
           desc: Hip-fire damage is improved when firing any gun.
-          hip_fire_damage_mul: 1.15
     - name: Basher
       ranks:
         - level: 1
@@ -900,6 +861,7 @@ factions:
     desc: Kills made by your melee weapons will restore some of your Action Points.
   Pack Alpha:
     desc: Your damage resistance is greatly increased (25% less damage) and you deal more damage (25%) while unarmed or using melee weapons.
+    melee_damage_add: 0.25
   Wasteland Warlord:
     - desc: Unlocks new structures at all Raider outposts.
     - desc: Unlocks additional structures at all Raider outposts.
