@@ -315,7 +315,10 @@ enum Command {
     Book { stat: Option<SpecialStat> },
     #[clap(about = "Set the difficulty (affects carry weight)", alias = "diff")]
     Difficulty { difficulty: Difficulty },
-    #[clap(about = "Limit the maximum required level for added perks")]
+    #[clap(
+        alias = "ll",
+        about = "Limit the maximum required level for added perks"
+    )]
     LevelLimit { level: Option<u8> },
     #[clap(display_order = 2, about = "Save the build")]
     Save { name: Vec<String> },
