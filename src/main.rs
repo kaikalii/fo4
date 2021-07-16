@@ -225,7 +225,11 @@ fn main() {
                         let message = e.to_string();
                         println!(
                             "COMMANDS:{}",
-                            message.split("SUBCOMMANDS:").nth(1).unwrap_or(&message)
+                            message
+                                .split("SUBCOMMANDS:")
+                                .nth(1)
+                                .unwrap_or(&message)
+                                .replace(" fo4", "")
                         );
                     }
                     _ => println!("{}\n", e),
@@ -256,20 +260,23 @@ struct App {
 #[derive(Debug, Clap)]
 #[allow(clippy::large_enum_variant)]
 enum Command {
-    #[clap(about = "Set a special stat")]
+    #[clap(display_order = 1, about = "Set a special stat")]
     Set {
         stat: SpecialStat,
         value: u8,
         #[clap(short = 'b', long = "bobblehead")]
         bobblehead: bool,
     },
-    #[clap(about = "Add a perk by name and rank")]
+    #[clap(display_order = 1, about = "Add a perk by name and rank")]
     Add { perk_and_rank: Vec<String> },
-    #[clap(about = "Remove a perk")]
+    #[clap(display_order = 1, about = "Remove a perk")]
     Remove { perk: Vec<String> },
-    #[clap(about = "Display a perk")]
+    #[clap(display_order = 1, about = "Display a perk")]
     Perk { perk: Vec<String> },
-    #[clap(about = "Display all perks for a S.P.E.C.I.A.L. stat(s)")]
+    #[clap(
+        display_order = 1,
+        about = "Display all perks for a S.P.E.C.I.A.L. stat(s)"
+    )]
     Special { stat: Option<SpecialStat> },
     #[clap(about = "Display all perk bobbleheads")]
     Bobbleheads,
@@ -281,9 +288,9 @@ enum Command {
     Factions,
     #[clap(about = "Display all other perks")]
     OtherPerks,
-    #[clap(about = "Reset the build")]
+    #[clap(display_order = 2, about = "Reset the build")]
     Reset,
-    #[clap(about = "Set the build's name")]
+    #[clap(display_order = 2, about = "Set the build's name")]
     Name { name: Vec<String> },
     #[clap(about = "Set the build's gender (affects perk names)")]
     Gender { gender: Gender },
@@ -293,26 +300,27 @@ enum Command {
     Difficulty { difficulty: Difficulty },
     #[clap(about = "Limit the maximum required level for added perks")]
     LevelLimit { level: Option<u8> },
-    #[clap(about = "Save the build")]
+    #[clap(display_order = 2, about = "Save the build")]
     Save { name: Vec<String> },
     #[clap(about = "Open the folder where builds are saved")]
     Builds,
-    #[clap(about = "Exit this tool")]
+    #[clap(display_order = 2, about = "Exit this tool")]
     Exit,
 }
 
 fn join_perk_def(parts: &[String]) -> anyhow::Result<PerkDef> {
-    parts.iter().map(String::as_str).collect::<String>().parse()
+    if parts.is_empty() {
+        bail!("You must specify a perk")
+    } else {
+        parts.iter().map(String::as_str).collect::<String>().parse()
+    }
 }
 
 fn join_perk_def_and_rank(parts: &[String]) -> anyhow::Result<(PerkDef, Option<u8>)> {
-    if parts.len() <= 1 {
-        parts
-            .get(0)
-            .map(String::as_str)
-            .unwrap_or_default()
-            .parse::<PerkDef>()
-            .map(|def| (def, None))
+    if parts.is_empty() {
+        bail!("You must specify a perk")
+    } else if parts.len() == 1 {
+        parts[0].parse::<PerkDef>().map(|def| (def, None))
     } else if let Ok(last) = parts.last().unwrap().parse::<u8>() {
         let sub = &parts[..(parts.len() - 1)];
         if sub
