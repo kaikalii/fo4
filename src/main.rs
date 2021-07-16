@@ -58,7 +58,7 @@ fn main() {
                     Command::Add { perk, rank } => catch(|| {
                         let rank = rank.unwrap_or_else(|| perk.max_rank());
                         build.add_perk(&perk, rank)?;
-                        let name = perk.name.get(build.gender.unwrap_or_default());
+                        let name = &perk.name[build.gender.unwrap_or_default()];
                         Ok(if rank == 0 {
                             format!("Removed {}", name)
                         } else {
@@ -67,7 +67,7 @@ fn main() {
                     }),
                     Command::Remove { perk } => catch(|| {
                         build.remove_perk(&perk)?;
-                        let name = perk.name.get(build.gender.unwrap_or_default());
+                        let name = &perk.name[build.gender.unwrap_or_default()];
                         Ok(format!("Removed {}", name))
                     }),
                     Command::Perk { perk } => {
@@ -116,6 +116,10 @@ fn main() {
                         build.special_book = stat;
                         Ok(message)
                     }),
+                    Command::Difficulty { difficulty } => {
+                        build.difficulty = Some(difficulty);
+                        Ok(format!("Difficulty set to {:?}", difficulty))
+                    }
                     Command::Save { name } => catch(|| {
                         if let Some(name) = name {
                             build.name = Some(name);
@@ -207,6 +211,8 @@ enum Command {
     Gender { gender: Gender },
     #[clap(about = "Set which stat to allocate the special book to")]
     Book { stat: Option<SpecialStat> },
+    #[clap(about = "Set the difficulty (affects carry weight)", alias = "diff")]
+    Difficulty { difficulty: Difficulty },
     #[clap(about = "Save the build")]
     Save { name: Option<String> },
     #[clap(about = "Open the folder where builds are saved")]

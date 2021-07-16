@@ -1,4 +1,6 @@
-use std::{cmp::Ordering, collections::BTreeMap, fmt, process::exit, str::FromStr};
+use std::{
+    array, cmp::Ordering, collections::BTreeMap, fmt, ops::Index, process::exit, str::FromStr,
+};
 
 use anyhow::bail;
 use bimap::BiBTreeMap;
@@ -53,6 +55,12 @@ pub enum PerkId {
     Bobblehead,
 }
 
+fn similarity(a: impl AsRef<str>, b: impl AsRef<str>) -> f64 {
+    (strsim::jaro_winkler(a.as_ref(), b.as_ref()) * 2.0
+        + strsim::normalized_levenshtein(a.as_ref(), b.as_ref()))
+        / 3.0
+}
+
 #[derive(Debug, Clone, Deserialize)]
 pub struct PerkDef {
     pub name: MaybeGendered<String>,
@@ -75,12 +83,7 @@ impl FromStr for PerkDef {
             .flat_map(|def| {
                 def.name.iter().map(move |name| {
                     let name = name.to_lowercase();
-                    (
-                        def,
-                        (strsim::jaro_winkler(s, &name) * 2.0
-                            + strsim::normalized_levenshtein(s, &name))
-                            / 3.0,
-                    )
+                    (def, similarity(s, &name))
                 })
             })
             .max_by_key(|(_, sim)| (*sim * 1000000.0) as u32)
@@ -118,7 +121,7 @@ pub struct Rank {
     #[serde(default = "default_required_level", alias = "level")]
     pub required_level: u8,
     #[serde(alias = "desc")]
-    pub description: MaybeGendered<String>,
+    pub description: MaybeDifficultied<MaybeGendered<String>>,
     #[serde(default, skip_serializing_if = "Vec::is_empty", flatten)]
     pub effects: Effects,
 }
@@ -171,30 +174,54 @@ effects!(
     (ap_add, f32, 0.0),
 );
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Deserialize)]
-#[serde(untagged)]
-pub enum MaybeGendered<T> {
-    Unisex(T),
-    Gendered(Gendered<T>),
+pub trait Selectable<T>: Index<Self::Selector, Output = T> {
+    type Selector: Copy + 'static;
+    fn selectors() -> &'static [Self::Selector];
 }
 
-impl<T> MaybeGendered<T> {
-    pub fn get(&self, gender: Gender) -> &T {
-        match self {
-            MaybeGendered::Unisex(s) => s,
-            MaybeGendered::Gendered(gendered) => gendered.get(gender),
-        }
-    }
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Deserialize)]
+#[serde(untagged)]
+pub enum MaybeVaried<T, M> {
+    One(T),
+    Multi(M),
+}
+
+impl<T, M> MaybeVaried<T, M>
+where
+    M: Selectable<T>,
+{
     pub fn iter(&self) -> impl Iterator<Item = &T> {
         match self {
-            MaybeGendered::Unisex(s) => vec![s],
-            MaybeGendered::Gendered(gendered) => {
-                vec![&gendered.male, &gendered.female]
-            }
+            MaybeVaried::One(once) => vec![once],
+            MaybeVaried::Multi(multi) => M::selectors()
+                .iter()
+                .map(|selector| &multi[*selector])
+                .collect(),
         }
         .into_iter()
     }
 }
+
+impl<T, M> Index<M::Selector> for MaybeVaried<T, M>
+where
+    M: Selectable<T>,
+{
+    type Output = T;
+    fn index(&self, selector: M::Selector) -> &Self::Output {
+        match self {
+            MaybeVaried::One(one) => one,
+            MaybeVaried::Multi(multi) => &multi[selector],
+        }
+    }
+}
+
+impl<T, M> From<T> for MaybeVaried<T, M> {
+    fn from(val: T) -> Self {
+        MaybeVaried::One(val)
+    }
+}
+
+pub type MaybeGendered<T> = MaybeVaried<T, Gendered<T>>;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Deserialize)]
 pub struct Gendered<T> {
@@ -202,8 +229,9 @@ pub struct Gendered<T> {
     pub female: T,
 }
 
-impl<T> Gendered<T> {
-    pub fn get(&self, gender: Gender) -> &T {
+impl<T> Index<Gender> for Gendered<T> {
+    type Output = T;
+    fn index(&self, gender: Gender) -> &Self::Output {
         match gender {
             Gender::Male => &self.male,
             Gender::Female => &self.female,
@@ -211,15 +239,10 @@ impl<T> Gendered<T> {
     }
 }
 
-impl<T> From<T> for MaybeGendered<T> {
-    fn from(val: T) -> Self {
-        MaybeGendered::Unisex(val)
-    }
-}
-
-impl<T> From<Gendered<T>> for MaybeGendered<T> {
-    fn from(gendered: Gendered<T>) -> Self {
-        MaybeGendered::Gendered(gendered)
+impl<T> Selectable<T> for Gendered<T> {
+    type Selector = Gender;
+    fn selectors() -> &'static [Self::Selector] {
+        &[Gender::Male, Gender::Female]
     }
 }
 
@@ -247,6 +270,41 @@ impl FromStr for Gender {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub enum Difficulty {
+    VeryEasy,
+    Easy,
+    Normal,
+    Hard,
+    VeryHard,
+    Survival,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Deserialize)]
+pub struct Difficultied<T> {
+    pub normal: T,
+    pub survival: T,
+}
+
+impl<T> Index<Difficulty> for Difficultied<T> {
+    type Output = T;
+    fn index(&self, difficulty: Difficulty) -> &Self::Output {
+        match difficulty {
+            Difficulty::Survival => &self.survival,
+            _ => &self.normal,
+        }
+    }
+}
+
+impl<T> Selectable<T> for Difficultied<T> {
+    type Selector = Difficulty;
+    fn selectors() -> &'static [Self::Selector] {
+        &[Difficulty::Normal, Difficulty::Survival]
+    }
+}
+
+pub type MaybeDifficultied<T> = MaybeVaried<T, Difficultied<T>>;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Bobblehead {
     Special(SpecialStat),
@@ -255,6 +313,41 @@ pub enum Bobblehead {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct SkillBobblehead {}
+
+impl Default for Difficulty {
+    fn default() -> Self {
+        Difficulty::Normal
+    }
+}
+
+impl FromStr for Difficulty {
+    type Err = anyhow::Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let s = s.to_lowercase();
+        let (difficulty, sim) = array::IntoIter::new([
+            Difficulty::VeryEasy,
+            Difficulty::Easy,
+            Difficulty::Normal,
+            Difficulty::Hard,
+            Difficulty::VeryHard,
+            Difficulty::Survival,
+        ])
+        .map(|difficulty| {
+            (
+                difficulty,
+                similarity(format!("{:?}", difficulty).to_lowercase(), &s),
+            )
+        })
+        .max_by_key(|(_, sim)| (*sim * 1000000.0) as u64)
+        .unwrap();
+        println!("{:?}: {}", difficulty, sim);
+        if sim >= 0.6 {
+            Ok(difficulty)
+        } else {
+            bail!("Invalid difficulty: {}", s)
+        }
+    }
+}
 
 #[derive(Deserialize)]
 struct AllPerksRep {

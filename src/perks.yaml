@@ -99,7 +99,9 @@ special:
           desc: When overencumbered, you can use Action Points to run.
           overencumbered_run_cost_mul: 1
         - level: 30
-          desc: (Normal Mode) When overencumbered, you can fast travel. (Survival Mode) When overencumbered, you will not become injured.
+          desc: 
+            normal: When overencumbered, you can fast travel.
+            survival: When overencumbered, you will not become injured.
           overencumbered_freedom: true
         - level: 40
           desc: When overencumbered, running costs 50% less action points.

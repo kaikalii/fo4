@@ -9,7 +9,7 @@ use anyhow::bail;
 use colored::{Color, Colorize};
 use serde::{Deserialize, Serialize};
 
-use crate::special::{Bobblehead, Gender, PerkDef, PerkId, SpecialStat, PERKS};
+use crate::special::{Bobblehead, Difficulty, Gender, PerkDef, PerkId, SpecialStat, PERKS};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Build {
@@ -22,6 +22,8 @@ pub struct Build {
     pub bobbleheads: BTreeSet<Bobblehead>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub special_book: Option<SpecialStat>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub difficulty: Option<Difficulty>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub perks: BTreeMap<PerkId, u8>,
 }
@@ -42,6 +44,7 @@ impl Default for Build {
                 })
                 .collect(),
             bobbleheads: BTreeSet::new(),
+            difficulty: None,
             special_book: None,
             perks: BTreeMap::new(),
         }
@@ -55,6 +58,9 @@ impl fmt::Display for Build {
             writeln!(f, "{}", bars)?;
             writeln!(f, "{}", name)?;
             writeln!(f, "{}", bars)?;
+        }
+        if let Some(difficuly) = self.difficulty {
+            writeln!(f, "{:?}", difficuly)?;
         }
         if let Some(gender) = self.gender {
             writeln!(f, "Gender: {:?}", gender)?;
@@ -122,11 +128,8 @@ impl fmt::Display for Build {
                 writeln!(
                     f,
                     "{} {}",
-                    PERKS
-                        .get_by_left(id)
-                        .expect("Unknown perk")
-                        .name
-                        .get(self.gender.unwrap_or_default()),
+                    PERKS.get_by_left(id).expect("Unknown perk").name
+                        [self.gender.unwrap_or_default()],
                     rank
                 )?;
             }
@@ -186,8 +189,14 @@ impl Build {
         1.0 + intelligence as f64 * 0.03
     }
     pub fn carry_weight(&self) -> u16 {
-        200 + self.total_points(SpecialStat::Strength) as u16 * 10
-            + self.effect_iter(PerkDef::carry_weight_add).sum::<u16>()
+        let base = if self.difficulty == Some(Difficulty::Survival) {
+            75
+        } else {
+            200
+        };
+        let from_strength = self.total_points(SpecialStat::Strength) as u16 * 10;
+        let from_perks = self.effect_iter(PerkDef::carry_weight_add).sum::<u16>();
+        base + from_strength + from_perks
     }
     pub fn melee_damage_mul(&self) -> f32 {
         1.0 + self.total_points(SpecialStat::Strength) as f32 * 0.1
@@ -296,7 +305,7 @@ impl Build {
         if rank > def.ranks.len() as u8 {
             bail!(
                 "{} only has {} ranks",
-                def.name.get(self.gender.unwrap_or_default()),
+                def.name[self.gender.unwrap_or_default()],
                 def.ranks.len()
             )
         } else if rank == 0 {
@@ -393,7 +402,7 @@ impl Build {
             println!(
                 "{:2}: {} {}",
                 points,
-                perk.name.get(gender).color(color),
+                perk.name[gender].color(color),
                 if let Some(points) = this_perk_points {
                     format!("({})", points)
                 } else {
@@ -404,7 +413,8 @@ impl Build {
     }
     pub fn print_perk(&self, perk: &PerkDef) {
         let gender = self.gender.unwrap_or_default();
-        println!("{}", perk.name.get(gender).bright_yellow());
+        let difficulty = self.difficulty.unwrap_or_default();
+        println!("{}", perk.name[gender].bright_yellow());
         let perk_id = PERKS.get_by_right(perk).expect("Unknown perk");
         let my_rank = self.perks.get(&perk_id).copied().unwrap_or(0);
         for (i, rank) in perk.ranks.iter().enumerate() {
@@ -420,7 +430,7 @@ impl Build {
             );
             let width = terminal_size::terminal_size().map_or(80, |(width, _)| width.0 as usize);
             let mut words: Vec<&str> = Vec::new();
-            for word in rank.description.get(gender).split_whitespace() {
+            for word in rank.description[difficulty][gender].split_whitespace() {
                 if words.iter().map(|s| s.len() + 1).sum::<usize>() + word.len() >= width - 1 {
                     print!("  ");
                     for word in words.drain(..) {
