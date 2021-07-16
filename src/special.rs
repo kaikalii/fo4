@@ -59,6 +59,12 @@ pub struct PerkDef {
     pub ranks: Vec<Rank>,
 }
 
+impl PerkDef {
+    pub fn max_rank(&self) -> u8 {
+        self.ranks.len() as u8
+    }
+}
+
 impl FromStr for PerkDef {
     type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -141,25 +147,27 @@ macro_rules! effects {
 }
 
 effects!(
-    (unarmed_damage_mul, f64, 1.0),
-    (unarmed_disarm_chance, f64, 0.0),
-    (unarmed_power_attack_cripple_chance, f64, 0.0),
+    (unarmed_damage_mul, f32, 1.0),
+    (unarmed_disarm_chance, f32, 0.0),
+    (unarmed_power_attack_cripple_chance, f32, 0.0),
     (unarmed_crits_paralyze, bool, false),
-    (melee_damage_mul, f64, 1.0),
-    (melee_disarm_chance, f64, 0.0),
+    (melee_damage_mul, f32, 1.0),
+    (melee_disarm_chance, f32, 0.0),
     (melee_cleaves, bool, false),
-    (melee_cripple_chance, f64, 0.0),
+    (melee_cripple_chance, f32, 0.0),
     (can_slam_heads_off, bool, false),
     (armor_mod_rank, u8, 0),
     (melee_mod_rank, u8, 0),
     (carry_weight_add, u8, 0),
-    (overencumbered_run_cost_mul, Option<f64>, None),
+    (overencumbered_run_cost_mul, Option<f32>, None),
     (overencumbered_freedom, bool, false),
-    (heavy_damage_mul, f64, 1.0),
-    (heavy_hip_fire_accuracy_add, f64, 1.0),
-    (heavy_stagger_chance, f64, 0.0),
-    (hip_fire_accuracy_add, f64, 0.0),
-    (hip_fire_damage_mul, f64, 1.0),
+    (heavy_damage_mul, f32, 1.0),
+    (heavy_hip_fire_accuracy_add, f32, 1.0),
+    (heavy_stagger_chance, f32, 0.0),
+    (hip_fire_accuracy_add, f32, 0.0),
+    (hip_fire_damage_mul, f32, 1.0),
+    (hp_add, f32, 0.0),
+    (ap_add, f32, 0.0),
 );
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Deserialize)]

@@ -257,10 +257,13 @@ special:
       ranks:
         - level: 1
           desc: You embody wellness! Instantly gain +20 maximum Health.
+          hp_add: 20
         - level: 8
           desc: You instantly gain another +20 maximum Health.
+          hp_add: 40
         - level: 20
           desc: You instantly gain another +20 maximum Health, and slowly regenerate lost Health.
+          hp_add: 60
     - name: Chem Resistant
       ranks:
         - level: 1
@@ -578,6 +581,7 @@ special:
           desc: Reloading guns costs no Action Points in V.A.T.S.
         - level: 40
           desc: Quick and efficient. You gain 10 additional Action Points.
+          ap_add: 10
     - name: Blitz
       ranks:
         - level: 1

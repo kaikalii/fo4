@@ -53,6 +53,7 @@ fn main() {
                         .set(stat, value, bobblehead)
                         .map(|_| message = format!("Set {:?} to {}", stat, value)),
                     Command::Add { perk, rank } => catch(|| {
+                        let rank = rank.unwrap_or_else(|| perk.max_rank());
                         build.add_perk(&perk, rank)?;
                         let name = perk.name.get(build.gender.unwrap_or_default());
                         message = if rank == 0 {
@@ -189,11 +190,7 @@ enum Command {
         bobblehead: bool,
     },
     #[clap(about = "Add a perk by name and rank")]
-    Add {
-        perk: PerkDef,
-        #[clap(default_value = "1")]
-        rank: u8,
-    },
+    Add { perk: PerkDef, rank: Option<u8> },
     #[clap(about = "Remove a perk")]
     Remove { perk: PerkDef },
     #[clap(about = "Display a perk")]
