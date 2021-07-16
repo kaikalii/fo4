@@ -54,6 +54,7 @@ pub enum PerkId {
     Special { stat: SpecialStat, points: u8 },
     Bobblehead(usize),
     Magazine(usize),
+    Companion(usize),
 }
 
 impl PerkId {
@@ -62,6 +63,7 @@ impl PerkId {
             PerkId::Special { stat, .. } => PerkKind::Special(*stat),
             PerkId::Bobblehead(_) => PerkKind::Bobblehead,
             PerkId::Magazine(_) => PerkKind::Magazine,
+            PerkId::Companion(_) => PerkKind::Companion,
         }
     }
 }
@@ -71,6 +73,7 @@ pub enum PerkKind {
     Special(SpecialStat),
     Bobblehead,
     Magazine,
+    Companion,
 }
 
 impl fmt::Display for PerkKind {
@@ -79,14 +82,23 @@ impl fmt::Display for PerkKind {
             PerkKind::Special(stat) => write!(f, "{:?}", stat),
             PerkKind::Bobblehead => write!(f, "Bobbleheads"),
             PerkKind::Magazine => write!(f, "Magazines"),
+            PerkKind::Companion => write!(f, "Companions"),
         }
     }
 }
 
 fn similarity(a: impl AsRef<str>, b: impl AsRef<str>) -> f64 {
-    (strsim::jaro_winkler(a.as_ref(), b.as_ref()) * 2.0
-        + strsim::normalized_levenshtein(a.as_ref(), b.as_ref()))
-        / 3.0
+    fn sim(a: &str, b: &str) -> f64 {
+        (strsim::jaro_winkler(a, b) * 2.0 + strsim::normalized_levenshtein(a, b)) / 3.0
+    }
+    let base = sim(a.as_ref(), b.as_ref());
+    let parts = a
+        .as_ref()
+        .split_whitespace()
+        .flat_map(|a| b.as_ref().split_whitespace().map(move |b| sim(a, b)))
+        .max_by(|a, b| a.partial_cmp(b).unwrap())
+        .unwrap_or(0.0);
+    (base + parts) / 2.0
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -461,6 +473,7 @@ struct AllPerksRep {
     special: BTreeMap<SpecialStat, Vec<PerkDef>>,
     bobbleheads: BTreeMap<MaybeGendered<String>, Rank>,
     magazines: BTreeMap<String, Ranks>,
+    companions: BTreeMap<String, Ranks>,
 }
 
 pub static PERKS: Lazy<BiBTreeMap<PerkId, PerkDef>> = Lazy::new(|| {
@@ -498,6 +511,15 @@ pub static PERKS: Lazy<BiBTreeMap<PerkId, PerkDef>> = Lazy::new(|| {
     for (i, (name, ranks)) in rep.magazines.into_iter().enumerate() {
         perks.insert(
             PerkId::Magazine(i),
+            PerkDef {
+                name: name.into(),
+                ranks,
+            },
+        );
+    }
+    for (i, (name, ranks)) in rep.companions.into_iter().enumerate() {
+        perks.insert(
+            PerkId::Companion(i),
             PerkDef {
                 name: name.into(),
                 ranks,

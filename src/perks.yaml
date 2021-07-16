@@ -724,24 +724,24 @@ bobbleheads:
   Unarmed: 
     desc: Permanently increases critical damage with unarmed attacks by 25%
 magazines:
-  Astoundingly Awesome 1:
+  Astoundingly Awesome 01:
     desc: Regenerate 1 point of health per minute.
-  Astoundingly Awesome 2:
+  Astoundingly Awesome 02:
     desc: Do +5% damage with scoped weapons.
-  Astoundingly Awesome 3:
+  Astoundingly Awesome 03:
     desc: Take 5% less damage from robots.
-  Astoundingly Awesome 4:
+  Astoundingly Awesome 04:
     desc: Do +5% damage with the Alien Blaster.
-  Astoundingly Awesome 5:
+  Astoundingly Awesome 05:
     desc: Gain +5 Poison Resistance.
-  Astoundingly Awesome 6:
+  Astoundingly Awesome 06:
     desc: Do +5% damage against Mirelurks.
-  Astoundingly Awesome 7:
+  Astoundingly Awesome 07:
     desc: Do +5% damage at night.
-  Astoundingly Awesome 8:
+  Astoundingly Awesome 08:
     desc: Gain +5 Action Points.
     ap_add: 5
-  Astoundingly Awesome 9:
+  Astoundingly Awesome 09:
     desc: Do +5% damage with the Cryolator.
   Astoundingly Awesome 10:
     desc: Gain +5 Radiation Resistance.
@@ -757,36 +757,36 @@ magazines:
     desc: Your canine companion takes 10% less damage.
   Grognak the Barbarian:
     count: 10
-    desc: Barbarian	Critical Hits with unarmed and melee attacks do +5% damage.
+    desc: Critical Hits with unarmed and melee attacks do +5% damage.
   Guns and Bullets:
     count: 10
     desc: Ballistic weapons do +5% critical damage.
   La Coiffe:
     count: 2
     desc: Extra hairstyles.
-  Live & Love 1:
+  Live & Love 01:
     desc: Companions gain +10 health.
-  Live & Love 2:
+  Live & Love 02:
     desc: Companions do +5% damage.
-  Live & Love 3:
+  Live & Love 03:
     desc: Companions have +10 carry weight.
-  Live & Love 4:
+  Live & Love 04:
     desc: Gain +25% XP from persuading women.
-  Live & Love 5:
+  Live & Love 05:
     desc: Gain +1 Luck from alcohol when adventuring with a companion.
-  Live & Love 6:
+  Live & Love 06:
     desc: Companions gain +5 Damage Resistance and Energy Resistance.
-  Live & Love 7:
+  Live & Love 07:
     desc: Gain +25% XP from persuading men.
-  Live & Love 8:
+  Live & Love 08:
     desc: Gain +5% XP while adventuring with a companion.
-  Live & Love 9:
+  Live & Love 09:
     desc: Robot companions inflict +5% damage.
   Live & Love 10:
     desc: Companions do 5% more damage.
   Massachusetts Surgical Journal:
     count: 9
-    desc: Massachusetts Surgery	Inflict +2% limb damage.
+    desc: Inflict +2% limb damage.
   Picket Fences 1:
     desc: You are now able to build picket fencing at settlement workshops
   Picket Fences 2:
@@ -795,7 +795,7 @@ magazines:
     desc: You are now able to build new statues at settlement workshops
   Picket Fences 4:
     desc: You are now able to build potted plants at settlement workshops
-  Picket Fences	5:
+  Picket Fences 5:
     desc: You are now able to build patio furniture at settlement workshops
   Tales of a Junktown Jerky Vendor:
     count: 8
@@ -854,3 +854,32 @@ magazines:
       +1 Strength & +1 Endurance if you have <10,000 caps.
       +2 Strength & +2 Endurance if you have <1,000 caps.
       +3 Strength & +3 Endurance if you have <100 caps.
+companions:
+  Cait (Trigger Rush):
+    desc: The player character's Action Points regenerate 25% faster if the Hit Points value is below 25% of its maximum.
+  Codsworth (Robot Sympathy):
+    desc: The player character gains +10 Damage Resistance against robots' energy attacks.
+  Curie (Combat Medic):
+    desc: The player character can heal 100 Hit Points if their current number of Hit Points is below 10%.
+  Paladin Danse (Know Your Enemy):
+    desc: The player character deals 20% more damage against irradiated ghouls, super mutants and synths.
+  Deacon (Cloak & Dagger):
+    desc: The player character gains +20% sneak attack damage and the duration of effects of Stealth Boys are increased by +40%.
+  John Hancock (Isodoped):
+    desc: The player character's Critical Hit value increases +20% faster, if the player character has 250 or more Radiation value.
+  Robert MacCready (Killshot):
+    desc: The player character has 20% greater chance to hit an enemy's head in V.A.T.S.
+  Nick Valentine (Close to Metal):
+    desc: 1 additional guess at choosing passwords in terminals, 50% faster terminal cooldown at hacking
+  Piper Wright (Gift of Gab):
+    desc: The player character gains double the XP value when persuading other people or when discovering new places.
+  Preston Garvey (United We Stand):
+    desc: The player character's Damage Resistance is increased by +20 and the player character deals +20% damage when outnumbered.
+  Strong (Berserk):
+    desc: The player character deals +20% Melee Damage, if the number of Hit Points is below 25% of original value.
+  X6-88 (Shield Harmonics):
+    desc: The player character's Energy Resistance is increased by +20.
+  Old Longfellow (Hunter's Wisdom):
+    desc: The Damage Resistance and Energy Resistance of animals and sea creatures is reduced by 25%.
+  Porter Gage (Lessons in Blood):
+    desc: The player character gains +5% more XP per kill and +10 Damage Resistance.

@@ -21,7 +21,7 @@ fn main() {
 
     let app = App::parse();
 
-    if app.no_color || !colored::control::ShouldColorize::from_env().should_colorize() {
+    if app.no_color || !colored::control::SHOULD_COLORIZE.should_colorize() {
         colored::control::set_override(false);
     }
 
@@ -105,7 +105,21 @@ fn main() {
                     Command::Bobbleheads => {
                         clear_terminal();
                         println!("{}", build);
-                        build.print_bobbleheads();
+                        build.print_perk_names(PerkKind::Bobblehead);
+                        println!();
+                        continue;
+                    }
+                    Command::Magazines => {
+                        clear_terminal();
+                        println!("{}", build);
+                        build.print_perk_names(PerkKind::Magazine);
+                        println!();
+                        continue;
+                    }
+                    Command::Companions => {
+                        clear_terminal();
+                        println!("{}", build);
+                        build.print_perk_names(PerkKind::Companion);
                         println!();
                         continue;
                     }
@@ -228,10 +242,14 @@ enum Command {
     Remove { perk: Vec<String> },
     #[clap(about = "Display a perk")]
     Perk { perk: Vec<String> },
-    #[clap(about = "Display all the perks for a S.P.E.C.I.A.L. stat(s)")]
+    #[clap(about = "Display all perks for a S.P.E.C.I.A.L. stat(s)")]
     Special { stat: Option<SpecialStat> },
-    #[clap(about = "Display all the perk bobbleheads")]
+    #[clap(about = "Display all perk bobbleheads")]
     Bobbleheads,
+    #[clap(about = "Display all perk magazines")]
+    Magazines,
+    #[clap(about = "Display all companion perks")]
+    Companions,
     #[clap(about = "Reset the build")]
     Reset,
     #[clap(about = "Set the build's name")]

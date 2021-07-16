@@ -1,3 +1,3 @@
-- Add companion perks
+- Add faction perks
 - Add more effects
 - Add equipment

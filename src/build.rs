@@ -11,7 +11,8 @@ use colored::{Color, Colorize};
 use serde::{Deserialize, Serialize};
 
 use crate::special::{
-    Bobblehead, Difficulty, FullyVariable, Gender, PerkDef, PerkId, Ranks, SpecialStat, PERKS,
+    Bobblehead, Difficulty, FullyVariable, Gender, PerkDef, PerkId, PerkKind, Ranks, SpecialStat,
+    PERKS,
 };
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -467,19 +468,16 @@ impl Build {
             );
         }
     }
-    pub fn print_bobbleheads(&self) {
-        println!("{}", "Bobbleheads".bright_yellow());
+    pub fn print_perk_names(&self, kind: PerkKind) {
+        println!("{}", kind.to_string().bright_yellow());
         let gender = self.gender.unwrap_or_default();
-        for (id, def) in PERKS
-            .iter()
-            .filter(|(id, _)| matches!(id, PerkId::Bobblehead(_)))
-        {
+        for (id, def) in PERKS.iter().filter(|(id, _)| id.kind() == kind) {
             let color = if self.perks.contains_key(id) {
                 Color::White
             } else {
                 Color::BrightBlack
             };
-            println!("{}", def.name[gender].color(color));
+            println!("  {}", def.name[gender].color(color));
         }
     }
     pub fn print_perk(&self, perk: &PerkDef) {
