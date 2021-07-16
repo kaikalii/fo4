@@ -10,6 +10,7 @@ clap.features = ['derive']
 clap.version = '3.0.0-beta.2'
 colored = '2'
 dirs = '3'
+itertools = '0.10'
 once_cell = '1'
 open = '1'
 serde.features = ['derive']

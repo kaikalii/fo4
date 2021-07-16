@@ -1,3 +1,5 @@
+#![allow(unstable_name_collisions)]
+
 mod build;
 mod special;
 
@@ -13,6 +15,7 @@ use clap::Clap;
 
 use build::*;
 use colored::Colorize;
+use itertools::Itertools;
 use once_cell::sync::Lazy;
 use special::*;
 
@@ -25,7 +28,16 @@ fn main() {
         colored::control::set_override(false);
     }
 
-    let mut build = if let Some(path) = app.path {
+    let mut build = if app.path.is_empty() {
+        clear_terminal();
+        Build::default()
+    } else {
+        let path: String = app
+            .path
+            .iter()
+            .map(|path| path.to_string_lossy().into_owned())
+            .intersperse(" ".into())
+            .collect();
         match Build::load(path) {
             Ok(build) => build,
             Err(e) => {
@@ -36,9 +48,6 @@ fn main() {
                 exit(1);
             }
         }
-    } else {
-        clear_terminal();
-        Build::default()
     };
 
     println!("\n{}", build);
@@ -141,11 +150,15 @@ fn main() {
                         build.reset();
                         Ok("Build reset!".into())
                     }
-                    Command::Name { name } => {
+                    Command::Name { name } => catch(|| {
+                        if name.is_empty() {
+                            bail!("Name cannot be empty")
+                        }
+                        let name = name.into_iter().intersperse(" ".into()).collect();
                         let message = format!("Build name set to {:?}", name);
                         build.name = Some(name);
                         Ok(message)
-                    }
+                    }),
                     Command::Gender { gender } => {
                         build.gender = Some(gender);
                         Ok(format!("Gender set to {:?}", gender))
@@ -175,8 +188,8 @@ fn main() {
                         })
                     }
                     Command::Save { name } => catch(|| {
-                        if let Some(name) = name {
-                            build.name = Some(name);
+                        if !name.is_empty() {
+                            build.name = Some(name.into_iter().intersperse(" ".into()).collect());
                         }
                         build.save()?;
                         Ok("Build saved!".into())
@@ -235,7 +248,7 @@ where
 
 #[derive(Clap)]
 struct App {
-    path: Option<PathBuf>,
+    path: Vec<PathBuf>,
     #[clap(long = "nocolor", about = "Run without terminal colors")]
     no_color: bool,
 }
@@ -271,7 +284,7 @@ enum Command {
     #[clap(about = "Reset the build")]
     Reset,
     #[clap(about = "Set the build's name")]
-    Name { name: String },
+    Name { name: Vec<String> },
     #[clap(about = "Set the build's gender (affects perk names)")]
     Gender { gender: Gender },
     #[clap(about = "Set which stat to allocate the special book to")]
@@ -281,7 +294,7 @@ enum Command {
     #[clap(about = "Limit the maximum required level for added perks")]
     LevelLimit { level: Option<u8> },
     #[clap(about = "Save the build")]
-    Save { name: Option<String> },
+    Save { name: Vec<String> },
     #[clap(about = "Open the folder where builds are saved")]
     Builds,
     #[clap(about = "Exit this tool")]
