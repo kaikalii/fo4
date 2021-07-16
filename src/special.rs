@@ -52,7 +52,7 @@ impl fmt::Display for SpecialStat {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum PerkId {
     Special { stat: SpecialStat, points: u8 },
-    Bobblehead,
+    Bobblehead(usize),
 }
 
 fn similarity(a: impl AsRef<str>, b: impl AsRef<str>) -> f64 {
@@ -116,12 +116,14 @@ impl Ord for PerkDef {
     }
 }
 
+pub type FullyVariable<T> = MaybeDifficultied<MaybeGendered<T>>;
+
 #[derive(Debug, Clone, Deserialize)]
 pub struct Rank {
     #[serde(default = "default_required_level", alias = "level")]
     pub required_level: u8,
     #[serde(alias = "desc")]
-    pub description: MaybeDifficultied<MaybeGendered<String>>,
+    pub description: FullyVariable<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty", flatten)]
     pub effects: Effects,
 }
@@ -172,6 +174,7 @@ effects!(
     (hip_fire_damage_mul, f32, 1.0),
     (hp_add, f32, 0.0),
     (ap_add, f32, 0.0),
+    (buy_price_sub, f32, 0.0)
 );
 
 pub trait Selectable<T>: Index<Self::Selector, Output = T> {
@@ -311,9 +314,6 @@ pub enum Bobblehead {
     Skill(SkillBobblehead),
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
-pub struct SkillBobblehead {}
-
 impl Default for Difficulty {
     fn default() -> Self {
         Difficulty::Normal
@@ -349,9 +349,27 @@ impl FromStr for Difficulty {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub enum SkillBobblehead {
+    Barter,
+    BigGuns,
+    EnergyWeapons,
+    Explosives,
+    Lockpicking,
+    Medicine,
+    Melee,
+    Repair,
+    Science,
+    SmallGuns,
+    Sneak,
+    Speech,
+    Unarmed,
+}
+
 #[derive(Deserialize)]
 struct AllPerksRep {
     special: BTreeMap<SpecialStat, Vec<PerkDef>>,
+    bobbleheads: BTreeMap<MaybeGendered<String>, Rank>,
 }
 
 pub static PERKS: Lazy<BiBTreeMap<PerkId, PerkDef>> = Lazy::new(|| {
@@ -373,6 +391,15 @@ pub static PERKS: Lazy<BiBTreeMap<PerkId, PerkDef>> = Lazy::new(|| {
                 def,
             );
         }
+    }
+    for (i, (name, rank)) in rep.bobbleheads.into_iter().enumerate() {
+        perks.insert(
+            PerkId::Bobblehead(i),
+            PerkDef {
+                name,
+                ranks: vec![rank],
+            },
+        );
     }
     perks
 });

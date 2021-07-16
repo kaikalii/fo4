@@ -91,6 +91,13 @@ fn main() {
                         println!();
                         continue;
                     }
+                    Command::Bobbleheads => {
+                        clear_terminal();
+                        println!("{}", build);
+                        build.print_bobbleheads();
+                        println!();
+                        continue;
+                    }
                     Command::Reset => {
                         build.reset();
                         Ok("Build reset!".into())
@@ -203,6 +210,8 @@ enum Command {
     Perk { perk: PerkDef },
     #[clap(about = "Display all the perks for a S.P.E.C.I.A.L. stat(s)")]
     Special { stat: Option<SpecialStat> },
+    #[clap(about = "Display all the perk bobbleheads")]
+    Bobbleheads,
     #[clap(about = "Reset the build")]
     Reset,
     #[clap(about = "Set the build's name")]

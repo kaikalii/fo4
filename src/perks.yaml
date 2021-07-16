@@ -329,8 +329,10 @@ special:
       ranks:
         - level: 1
           desc: You've mastered the art of the deal! Buying and selling prices at vendors are better.
+          buy_price_sub: 0.1
         - level: 20
           desc: Buying and selling prices of vendors are now much better.
+          buy_price_sub: 0.2
         - level: 41
           desc: You can now invest a total of 500 caps to raise a store's buying capacity.
     - name: 
@@ -693,3 +695,31 @@ special:
           desc: There's an increased chance that an enemy's shot will ricochet back and kill them.
         - level: 50
           desc: When an enemy's shot ricochets back and kills them, there is a chance your Critical meter gets filled.
+bobbleheads:
+  Barter: 
+    desc: Permanently grants 5% better prices when buying
+    buy_price_sub: 0.05
+  Big Guns: 
+    desc: Permanently increases critical damage with heavy weapons by 25%
+  Energy Weapons: 
+    desc: Permanently increases critical damage with energy weapons by 25%
+  Explosives: 
+    desc: Permanently increases damage with explosives by 15%
+  Lockpicking: 
+    desc: Permanently makes lockpicking easier
+  Medicine: 
+    desc: Permanently increases healing from stimpaks by 10%
+  Melee: 
+    desc: Permanently increases critical damage with melee weapons by 25%
+  Repair: 
+    desc: Permanently increases the duration of fusion cores by 10%
+  Science: 
+    desc: Permanently gives you an extra guess when hacking terminals
+  Small Guns: 
+    desc: Permanently increases critical damage with ballistic weapons by 25%
+  Sneak: 
+    desc: Permanently makes the player character 10% harder to detect
+  Speech: 
+    desc: Permanently gives all vendors 100 bottle caps extra when bartering
+  Unarmed: 
+    desc: Permanently increases critical damage with unarmed attacks by 25%

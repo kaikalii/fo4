@@ -9,7 +9,7 @@ use anyhow::bail;
 use colored::{Color, Colorize};
 use serde::{Deserialize, Serialize};
 
-use crate::special::{Bobblehead, Difficulty, Gender, PerkDef, PerkId, SpecialStat, PERKS};
+use crate::special::{Bobblehead, Difficulty, Gender, PerkDef, PerkId, Rank, SpecialStat, PERKS};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Build {
@@ -179,10 +179,12 @@ impl Build {
         10 + self.total_points(SpecialStat::Charisma)
     }
     pub fn buying_price_mul(&self) -> f32 {
-        3.5 - self.total_points(SpecialStat::Charisma) as f32 * 0.15
+        ((3.5 - self.total_points(SpecialStat::Charisma) as f32 * 0.15)
+            / (1.0 + self.effect_iter(PerkDef::buy_price_sub).sum::<f32>()))
+        .max(1.2)
     }
     pub fn selling_price_mul(&self) -> f32 {
-        1.0 / self.buying_price_mul()
+        (1.0 / self.buying_price_mul()).min(0.8)
     }
     pub fn experience_mul(&self) -> f64 {
         let intelligence = self.total_points(SpecialStat::Intelligence);
@@ -411,23 +413,40 @@ impl Build {
             );
         }
     }
+    pub fn print_bobbleheads(&self) {
+        println!("{}", "Bobbleheads".bright_yellow());
+        let gender = self.gender.unwrap_or_default();
+        for (id, def) in PERKS
+            .iter()
+            .filter(|(id, _)| matches!(id, PerkId::Bobblehead(_)))
+        {
+            let color = if self.perks.contains_key(id) {
+                Color::White
+            } else {
+                Color::BrightBlack
+            };
+            println!("{}", def.name[gender].color(color));
+        }
+    }
     pub fn print_perk(&self, perk: &PerkDef) {
         let gender = self.gender.unwrap_or_default();
         let difficulty = self.difficulty.unwrap_or_default();
         println!("{}", perk.name[gender].bright_yellow());
         let perk_id = PERKS.get_by_right(perk).expect("Unknown perk");
         let my_rank = self.perks.get(&perk_id).copied().unwrap_or(0);
-        for (i, rank) in perk.ranks.iter().enumerate() {
-            let (rank_color, desc_color) = if my_rank > i as u8 {
+        let print_rank = |i: Option<usize>, rank: &Rank| {
+            let (rank_color, desc_color) = if i.map_or(false, |i| my_rank > i as u8) {
                 (Color::BrightCyan, Color::BrightWhite)
             } else {
                 (Color::Cyan, Color::White)
             };
-            println!(
-                "{} {}",
-                format!("Rank {}", i + 1).color(rank_color),
-                format!("(Level {})", rank.required_level).bright_black(),
-            );
+            if let Some(i) = i {
+                println!(
+                    "{} {}",
+                    format!("Rank {}", i + 1).color(rank_color),
+                    format!("(Level {})", rank.required_level).bright_black(),
+                );
+            }
             let width = terminal_size::terminal_size().map_or(80, |(width, _)| width.0 as usize);
             let mut words: Vec<&str> = Vec::new();
             for word in rank.description[difficulty][gender].split_whitespace() {
@@ -446,6 +465,13 @@ impl Build {
                     print!("{} ", word.color(desc_color));
                 }
                 println!();
+            }
+        };
+        if perk.ranks.len() == 1 {
+            print_rank(None, &perk.ranks[0]);
+        } else {
+            for (i, rank) in perk.ranks.iter().enumerate() {
+                print_rank(Some(i), rank);
             }
         }
     }
