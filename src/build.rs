@@ -298,7 +298,7 @@ impl Build {
             let (rank_color, desc_color) = if my_rank > i as u8 {
                 (Color::BrightCyan, Color::BrightWhite)
             } else {
-                (Color::White, Color::White)
+                (Color::Cyan, Color::White)
             };
             println!(
                 "{} {}",

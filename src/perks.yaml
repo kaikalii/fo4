@@ -499,3 +499,189 @@ special:
           desc: You now gain 30 more Damage Resistance and do 30% more damage while Nerd Rage is in effect.
         - level: 50
           desc: You now gain 40 more Damage Resistance and do 40% more damage while Nerd Rage is in effect. Kills you make while enraged restore some lost Health.
+  Agility:
+    - name: Gunslinger
+      ranks:
+        - level: 1
+          desc: Channel the spirit of the old west! Non-automatic pistols do 20% more damage.
+        - level: 7
+          desc: Non-automatic pistols now do 40% more damage and have increased range.
+        - level: 15
+          desc: Non-automatic pistols now do 60% more damage and range is increased even further.
+        - level: 27
+          desc: Non-automatic pistols now do 80% more damage and their attacks can disarm opponents.
+        - level: 42
+          desc: Non-automatic pistols now do double damage. Their attacks have a much better chance to disarm opponents, and may even cripple a limb.
+    - name: Commando
+      ranks:
+        - level: 1
+          desc: Rigorous combat training means automatic weapons do 20% more damage
+        - level: 11
+          desc: Attacks with automatic weapons do 40% more damage, with improved hip fire accuracy.
+        - level: 21
+          desc: Attacks with automatic weapons do 60% more damage. Hip fire accuracy is improved even more.
+        - level: 35
+          desc: Attacks with automatic weapons do 80% more damage and gain a chance to stagger opponents.
+        - level: 49
+          desc: Your automatic weapons now do double damage and have a greater chance to stagger opponents.
+    - name: Sneak
+      ranks:
+        - level: 1
+          desc: Become whisper, become shadow. You are 20% harder to detect while sneaking.
+        - level: 5
+          desc: You are now 30% harder to detect while sneaking, and no longer trigger floor-based traps.
+        - level: 12
+          desc: You are now 40% harder to detect while sneaking, and no longer trigger enemy mines.
+        - level: 23
+          desc: You are now 50% harder to detect while sneaking, and running no longer adversely affects stealth.
+        - level: 38
+          desc: Engaging stealth causes distant enemies to lose you.
+    - name: Mister Sandman
+      ranks:
+        - level: 1
+          desc: As an agent of death, you can instantly kill a sleeping person. Your silenced weapons do an additional 15% sneak attack damage.
+        - level: 17
+          desc: Your silenced weapons do an additional 30% sneak attack damage.
+        - level: 30
+          desc: Your silenced weapons now do 50% more sneak attack damage.
+    - name: 
+        male: Action Boy
+        female: Action Girl
+      ranks:
+        - level: 1
+          desc: There's no time to waste! Action Points regenerate 25% faster.
+        - level: 18
+          desc: Your Action Points now regenerate 50% faster.
+        - level: 38
+          desc: Your Action Points now regenerate 75% faster.
+    - name: Moving Target
+      ranks:
+        - level: 1
+          desc: They can't hurt what they can't hit! Get 25+ Damage Resistance and 25+ Energy Resistance when you're sprinting.
+        - level: 24
+          desc: You now get +50 Damage Resistance and +50 Energy Resistance when you're sprinting.
+        - level: 44
+          desc: Sprinting costs 50% fewer Action Points.
+    - name: Ninja
+      ranks:
+        - level: 1
+          desc: Trained as a shadow warrior, your ranged sneak attack do 2.5x normal damage and your melee attacks do 4x normal damage.
+        - level: 16
+          desc: Your ranged sneak attacks do 3x normal damage and your melee sneak attacks do 5x normal damage.
+        - level: 33
+          desc: Your ranged sneak attacks do 3.5x normal damage and your melee sneak attacks do 10x normal damage.
+    - name: Quick Hands
+      ranks:
+        - level: 1
+          desc: In combat, there's no time to hesitate. You can reload all guns faster.
+        - level: 28
+          desc: Reloading guns costs no Action Points in V.A.T.S.
+        - level: 40
+          desc: Quick and efficient. You gain 10 additional Action Points.
+    - name: Blitz
+      ranks:
+        - level: 1
+          desc: Find the gap and make the tackle! V.A.T.S. melee distance is increased significantly.
+        - level: 29
+          desc: V.A.T.S. melee distance is increased even more, and the farther the Blitz distance, the greater the damage.
+    - name: Gun Fu
+      ranks:
+        - level: 1
+          desc: You've learned to apply ancient martial arts to gunplay! Do 25% more damage to your second V.A.T.S. target and beyond.
+        - level: 26
+          desc: In V.A.T.S. you do 50% more damage to your third target and beyond.
+        - level: 50
+          desc: In V.A.T.S. you instantly do a Critical Hit against your fourth target and beyond.
+  Luck:
+    - name: Fortune Finder
+      ranks:
+        - level: 1
+          desc: You've learned to discover the Wasteland's hidden wealth, and discover more bottle caps in containers.
+        - level: 5
+          desc: You find even more bottle caps in containers.
+        - level: 25
+          desc: You find even more bottle caps in containers.
+        - level: 40
+          desc: You find even more bottle caps in containers, and there is a chance of enemies exploding into a shower of caps when you kill them.
+    - name: Scrounger
+      ranks:
+        - level: 1
+          desc: You know just how to scavenge to keep the fight going, and find more ammunition in containers.
+        - level: 7
+          desc: You find even more ammunition in containers.
+        - level: 24
+          desc: You find even more ammunition in containers.
+        - level: 37
+          desc: There is a chance to gain ammo when firing the last round in your magazine.
+    - name: Bloody Mess
+      ranks:
+        - level: 1
+          desc: +5% bonus damage means enemies will sometimes explode into a gory red paste. Watch out for flying eyeballs!
+        - level: 9
+          desc: You now inflict +10% damage in combat.
+        - level: 31
+          desc: You now inflict +15% damage in combat.
+        - level: 47
+          desc: When an enemy explodes, nearby enemies may suffer the same fate.
+    - name: Mysterious Stranger
+      ranks:
+        - level: 1
+          desc: Who is he? Why does he help? Who cares! The Mysterious Stranger will appear occasionally in V.A.T.S. to lend a hand, with deadly efficiency...
+        - level: 22
+          desc: The Mysterious Stranger appears more often in V.A.T.S.
+        - level: 41
+          desc: The Mysterious Stranger appears more often in V.A.T.S. When he kills an opponent, there is a chance your Critical meter gets filled.
+        - level: 49
+          desc: The Mysterious Stranger appears more often in V.A.T.S. When he kills an opponent, there is a high chance your Critical meter gets filled.
+    - name: Idiot Savant
+      ranks:
+        - level: 1
+          desc: You're not stupid! Just... different. Randomly receive 3x XP from any action, and the lower your Intelligence, the greater the chance.
+        - level: 11
+          desc: You now randomly receive 5x XP from any action. The lower your Intelligence, the greater the chance.
+        - level: 34
+          desc: Randomly receiving bonus XP from any action may trigger 3x XP for all kills for a short period of time. The lower your Intelligence, the greater the chance.
+    - name: Better Criticals
+      ranks:
+        - level: 1
+          desc: Advanced training for enhanced combat effectiveness! Criticals do 50% more extra damage.
+        - level: 15
+          desc: Your criticals now do twice as much extra damage.
+        - level: 40
+          desc: Your criticals now do 2.5x as much extra damage.
+    - name: Critical Banker
+      ranks:
+        - level: 1
+          desc: You're a patient battlefield tactician, and can save a Critical Hit, to be used in V.A.T.S. when you need it most.
+        - level: 17
+          desc: You can now save 2 Critical Hits, to be used in V.A.T.S. when you need them the most.
+        - level: 43
+          desc: You can now save 3 Critical Hits, to be used in V.A.T.S. when you need them the most. Banking a Critical has a chance to save an additional Critical.
+        - level: 50
+          desc: You can now save 4 Critical Hits, to be used in V.A.T.S. when you need them the most.
+    - name: Grim Reaper's Sprint
+      ranks:
+        - level: 1
+          desc: Death becomes you! Any kill in V.A.T.S. has a 15% chance to restore all Action Points.
+        - level: 19
+          desc: Any kill in V.A.T.S. now has a 25% chance to restore all Action Points.
+        - level: 46
+          desc: Any kill in V.A.T.S. has a 35% chance to restore all Action Points and refill your Critical meter.
+    - name: Four Leaf Clover
+      ranks:
+        - level: 1
+          desc: Feeling Lucky? You should! Each hit in V.A.T.S. has a chance of filling your Critical meter.
+        - level: 13
+          desc: Each hit in V.A.T.S. now has an even better chance of filling your Critical meter.
+        - level: 32
+          desc: Each hit in V.A.T.S. now has a very good chance of filling your Critical meter.
+        - level: 48
+          desc: Each hit in V.A.T.S. now has an excellent chance of filling your Critical meter.
+    - name: Ricochet
+      ranks:
+        - level: 1
+          desc: What goes around comes around! Any enemy's ranged attacks will sometimes ricochet back and instantly kill them. The closer you are to death, the higher the chance.
+        - level: 29
+          desc: There's an increased chance that an enemy's shot will ricochet back and kill them.
+        - level: 50
+          desc: When an enemy's shot ricochets back and kills them, there is a chance your Critical meter gets filled.

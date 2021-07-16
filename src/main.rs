@@ -56,22 +56,23 @@ fn main() {
                         build.add_perk(&perk, rank)?;
                         let name = perk.name.get(build.gender.unwrap_or_default());
                         message = if rank == 0 {
-                            format!("Removed {}\n", name)
+                            format!("Removed {}", name)
                         } else {
-                            format!("Added {} rank {}\n", name, rank)
+                            format!("Added {} rank {}", name, rank)
                         };
                         Ok(())
                     }),
                     Command::Remove { perk } => catch(|| {
                         build.remove_perk(&perk)?;
                         let name = perk.name.get(build.gender.unwrap_or_default());
-                        message = format!("Removed {}\n", name);
+                        message = format!("Removed {}", name);
                         Ok(())
                     }),
                     Command::Perk { perk } => {
                         clear_terminal();
-                        println!("{}\n", build);
+                        println!("{}", build);
                         build.print_perk(&perk);
+                        println!();
                         continue;
                     }
                     Command::Special { stat } => {
@@ -130,7 +131,7 @@ fn main() {
                     Command::Exit => break,
                 };
                 clear_terminal();
-                println!("{}\n", build);
+                println!("{}", build);
                 if !message.is_empty() {
                     println!("{}\n", message.bright_green());
                 }
