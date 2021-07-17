@@ -282,7 +282,11 @@ impl Build {
             .saturating_sub(Self::INITIAL_ASSIGNABLE_POINTS)
     }
     pub fn assigned_perk_points(&self) -> u8 {
-        self.perks.values().sum::<u8>()
+        self.perks
+            .iter()
+            .filter(|(id, _)| matches!(id, PerkId::Special { .. }))
+            .map(|(_, rank)| rank)
+            .sum::<u8>()
     }
     pub fn level_up_assigned_points(&self) -> u8 {
         self.level_up_assigned_special_points() + self.assigned_perk_points()
