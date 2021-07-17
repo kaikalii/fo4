@@ -387,6 +387,9 @@ special:
           desc: Let Vault-Tec guide you! The path to your closest quest target is displayed in V.A.T.S.
         - level: 36
           desc: Gain +2 to Perception.
+          stat_increase:
+            stat: Perception
+            increase: 2
     - name: Medic
       ranks:
         - level: 1

@@ -1,5 +1,12 @@
 use std::{
-    array, cmp::Ordering, collections::BTreeMap, fmt, ops::Index, process::exit, str::FromStr,
+    array,
+    cmp::Ordering,
+    collections::BTreeMap,
+    fmt,
+    iter::{empty, once},
+    ops::Index,
+    process::exit,
+    str::FromStr,
 };
 
 use anyhow::bail;
@@ -52,7 +59,7 @@ impl fmt::Display for SpecialStat {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub enum PerkId {
     Special { stat: SpecialStat, points: u8 },
-    Bobblehead(usize),
+    Bobblehead(BobbleheadId),
     Magazine(usize),
     Companion(usize),
     Faction(usize),
@@ -70,6 +77,12 @@ impl PerkId {
             PerkId::Other(_) => PerkKind::Other,
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+pub enum BobbleheadId {
+    Special(SpecialStat),
+    Other(usize),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -226,8 +239,8 @@ impl Ranks {
 }
 
 macro_rules! effects {
-    ($(($name:ident, $ty:ty, $default:expr)),* $(,)?) => {
-        #[derive(Debug, Clone, Deserialize)]
+    ($(($name:ident, $ty:ty)),* $(,)?) => {
+        #[derive(Debug, Clone, Default, Deserialize)]
         pub struct Effects {
             $(
                 #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -237,24 +250,24 @@ macro_rules! effects {
         impl PerkDef {
             $(
                 #[allow(dead_code)]
-                pub fn $name<F>(&self, rank: u8, f: F) -> $ty where F: Fn($ty, $ty) -> $ty {
+                pub fn $name(&self, rank: u8) -> Box<dyn Iterator<Item = $ty>> {
                     match &self.ranks {
-                        Ranks::Single {effects, ..} => if let Some(val) = effects.$name {
-                            f($default, val)
+                        Ranks::Single { effects, .. } => if let Some(val) = effects.$name {
+                            Box::new(once(val)) as Box<dyn Iterator<Item = $ty>>
                         } else {
-                            $default
-                        }
+                            Box::new(empty())
+                        }.into_iter(),
                         Ranks::UniformCumulative { count, effects, .. } => if let Some(val) = effects.$name {
-                            (0..*count).map(|_| val).fold($default, f)
+                            Box::new((0..*count).map(move |_| val)) as Box<dyn Iterator<Item = $ty>>
                         } else {
-                            $default
+                            Box::new(empty())
                         }
-                        Ranks::VaryingCumulative(ranks) => ranks
+                        Ranks::VaryingCumulative(ranks) => Box::new(ranks
                             .iter()
                             .take(rank as usize)
                             .rev()
-                            .find_map(|rank| rank.effects.$name.map(|val| f($default, val)))
-                            .unwrap_or($default)
+                            .find_map(|rank| rank.effects.$name)
+                            .into_iter())
                     }
                 }
             )*
@@ -263,12 +276,24 @@ macro_rules! effects {
 }
 
 effects!(
-    (melee_damage_add, f32, 0.0),
-    (carry_weight_add, u16, 0),
-    (hp_add, f32, 0.0),
-    (ap_add, f32, 0.0),
-    (buy_price_sub, f32, 0.0)
+    (melee_damage_add, f32),
+    (carry_weight_add, u16),
+    (hp_add, f32),
+    (ap_add, f32),
+    (buy_price_sub, f32),
+    (stat_increase, StatIncrease)
 );
+
+#[derive(Debug, Clone, Copy, Deserialize)]
+pub struct StatIncrease {
+    pub stat: SpecialStat,
+    #[serde(default = "default_stat_increase")]
+    pub increase: u8,
+}
+
+fn default_stat_increase() -> u8 {
+    1
+}
 
 pub trait Selectable<T>: Index<Self::Selector, Output = T> {
     type Selector: Copy + 'static;
@@ -400,13 +425,6 @@ impl<T> Selectable<T> for Difficultied<T> {
 
 pub type MaybeDifficultied<T> = MaybeVaried<T, Difficultied<T>>;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum Bobblehead {
-    Special(SpecialStat),
-    Skill(SkillBobblehead),
-}
-
 impl Default for Difficulty {
     fn default() -> Self {
         Difficulty::Normal
@@ -490,9 +508,27 @@ pub static PERKS: Lazy<BiBTreeMap<PerkId, PerkDef>> = Lazy::new(|| {
             );
         }
     }
+    for &stat in SpecialStat::ALL {
+        perks.insert(
+            PerkId::Bobblehead(BobbleheadId::Special(stat)),
+            PerkDef {
+                name: stat.to_string().into(),
+                ranks: Ranks::Single {
+                    description: MaybeVaried::One(MaybeVaried::One(format!(
+                        "Increase {} by 1.",
+                        stat
+                    ))),
+                    effects: Effects {
+                        stat_increase: Some(StatIncrease { stat, increase: 1 }),
+                        ..Default::default()
+                    },
+                },
+            },
+        );
+    }
     for (i, (name, rank)) in rep.bobbleheads.into_iter().enumerate() {
         perks.insert(
-            PerkId::Bobblehead(i),
+            PerkId::Bobblehead(BobbleheadId::Other(i)),
             PerkDef {
                 name,
                 ranks: Ranks::Single {

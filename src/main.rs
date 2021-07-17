@@ -60,12 +60,8 @@ fn main() {
         match Command::try_parse_from(args) {
             Ok(command) => {
                 let res = match command {
-                    Command::Set {
-                        stat,
-                        value,
-                        bobblehead,
-                    } => build
-                        .set(stat, value, bobblehead)
+                    Command::Set { stat, value } => build
+                        .set(stat, value)
                         .map(|_| format!("Set {:?} to {}", stat, value)),
                     Command::Add {
                         perk: head,
@@ -275,12 +271,7 @@ struct App {
 #[allow(clippy::large_enum_variant)]
 enum Command {
     #[clap(display_order = 1, about = "Set a special stat")]
-    Set {
-        stat: SpecialStat,
-        value: u8,
-        #[clap(short = 'b', long = "bobblehead")]
-        bobblehead: bool,
-    },
+    Set { stat: SpecialStat, value: u8 },
     #[clap(display_order = 1, about = "Add a perk by name and rank")]
     Add {
         perk: String,

@@ -1,5 +1,5 @@
 use std::{
-    collections::{BTreeMap, BTreeSet},
+    collections::BTreeMap,
     fmt, fs,
     iter::repeat,
     ops::Add,
@@ -11,7 +11,7 @@ use colored::{Color, Colorize};
 use serde::{Deserialize, Serialize};
 
 use crate::special::{
-    Bobblehead, Difficulty, FullyVariable, Gender, PerkDef, PerkId, PerkKind, Ranks, SpecialStat,
+    BobbleheadId, Difficulty, FullyVariable, Gender, PerkDef, PerkId, PerkKind, Ranks, SpecialStat,
     PERKS,
 };
 
@@ -22,8 +22,6 @@ pub struct Build {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub gender: Option<Gender>,
     pub special: BTreeMap<SpecialStat, u8>,
-    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
-    pub bobbleheads: BTreeSet<Bobblehead>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub special_book: Option<SpecialStat>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -47,7 +45,6 @@ impl Default for Build {
                     }
                 })
                 .collect(),
-            bobbleheads: BTreeSet::new(),
             difficulty: None,
             special_book: None,
             perks: BTreeMap::new(),
@@ -159,7 +156,7 @@ impl Build {
     pub fn base_health(&self) -> f32 {
         let endurance = self.total_points(SpecialStat::Endurance) as f32;
         let base = 80.0 + endurance * 5.0;
-        let from_perks = self.fold_effect(PerkDef::hp_add, Add::add);
+        let from_perks = self.fold_effect(PerkDef::hp_add, 0.0, Add::add);
         base + from_perks
     }
     pub fn health(&self) -> f32 {
@@ -169,7 +166,7 @@ impl Build {
     pub fn base_agility(&self) -> f32 {
         let agility = self.total_points(SpecialStat::Agility) as f32;
         let base = 60.0 + agility * 10.0;
-        let from_perks = self.fold_effect(PerkDef::ap_add, Add::add);
+        let from_perks = self.fold_effect(PerkDef::ap_add, 0.0, Add::add);
         base + from_perks
     }
     pub fn hits_per_crit(&self) -> u8 {
@@ -190,7 +187,7 @@ impl Build {
     }
     pub fn buying_price_mul(&self) -> f32 {
         ((3.5 - self.total_points(SpecialStat::Charisma) as f32 * 0.15)
-            / (1.0 + self.fold_effect(PerkDef::buy_price_sub, Add::add)))
+            / (1.0 + self.fold_effect(PerkDef::buy_price_sub, 0.0, Add::add)))
         .max(1.2)
     }
     pub fn selling_price_mul(&self) -> f32 {
@@ -207,20 +204,16 @@ impl Build {
             200
         };
         let from_strength = self.total_points(SpecialStat::Strength) as u16 * 10;
-        let from_perks = self.fold_effect(PerkDef::carry_weight_add, Add::add);
+        let from_perks = self.fold_effect(PerkDef::carry_weight_add, 0, Add::add);
         base + from_strength + from_perks
     }
     pub fn melee_damage_mul(&self) -> f32 {
         1.0 + self.total_points(SpecialStat::Strength) as f32 * 0.1
-            + self.fold_effect(PerkDef::melee_damage_add, Add::add)
+            + self.fold_effect(PerkDef::melee_damage_add, 0.0, Add::add)
     }
     pub fn total_base_points(&self, stat: SpecialStat) -> u8 {
         self.special[&stat]
-            + if self.bobbleheads.contains(&Bobblehead::Special(stat)) {
-                1
-            } else {
-                0
-            }
+            + self.bobblehead_for(stat) as u8
             + if self.special_book == Some(stat) {
                 1
             } else {
@@ -239,12 +232,23 @@ impl Build {
                     .map_or(0, |&rank| if rank >= 2 { 2 } else { 0 }),
                 _ => 0,
             }
+            + self.stat_increase_for(stat)
+            - self.bobblehead_for(stat) as u8
+    }
+    pub fn bobblehead_for(&self, stat: SpecialStat) -> bool {
+        self.perks
+            .contains_key(&PerkId::Bobblehead(BobbleheadId::Special(stat)))
+    }
+    pub fn stat_increase_for(&self, stat: SpecialStat) -> u8 {
+        self.fold_effect(PerkDef::stat_increase, 0, |acc, si| {
+            acc + if si.stat == stat { si.increase } else { 0 }
+        })
     }
     pub fn points_string(&self, stat: SpecialStat) -> String {
         format!(
             "{}{}{}",
             self.special[&stat].to_string(),
-            if self.bobbleheads.contains(&Bobblehead::Special(stat)) {
+            if self.bobblehead_for(stat) {
                 " + bobblehead"
             } else {
                 ""
@@ -256,23 +260,16 @@ impl Build {
             }
         )
     }
-    pub fn fold_effect<'a, F, T, G>(&'a self, get: F, fold: G) -> T
+    pub fn fold_effect<'a, F, T, G, A, I>(&'a self, get: F, init: A, fold: G) -> A
     where
-        F: Fn(&'a PerkDef, u8, G) -> T + 'a,
-        G: Fn(T, T) -> T + Clone,
+        F: Fn(&'a PerkDef, u8) -> I + 'a,
+        G: Fn(A, T) -> A + Clone,
+        I: Iterator<Item = T>,
     {
-        let fold_clone = fold.clone();
-        let mut iter = self.perks.iter().map(|(id, rank)| {
-            get(
-                PERKS.get_by_left(id).expect("Unknown perk"),
-                *rank,
-                fold.clone(),
-            )
-        });
-        let first = iter
-            .next()
-            .unwrap_or_else(|| get(PERKS.right_values().next().unwrap(), 1, fold_clone.clone()));
-        iter.fold(first, fold_clone)
+        self.perks
+            .iter()
+            .flat_map(|(id, rank)| get(PERKS.get_by_left(id).expect("Unknown perk"), *rank))
+            .fold(init, fold)
     }
     pub fn remaining_initial_points(&self) -> u8 {
         Self::INITIAL_ASSIGNABLE_POINTS.saturating_sub(self.assigned_special_points())
@@ -306,15 +303,11 @@ impl Build {
         let for_spent_points = self.level_up_assigned_points() + 1;
         for_rank_reqs.max(for_spent_points)
     }
-    pub fn set(
-        &mut self,
-        stat: SpecialStat,
-        mut allocated: u8,
-        mut bobblehead: bool,
-    ) -> anyhow::Result<()> {
+    pub fn set(&mut self, stat: SpecialStat, mut allocated: u8) -> anyhow::Result<()> {
+        let mut add_bobble = false;
         if allocated == 11 {
             allocated = 10;
-            bobblehead = true;
+            add_bobble = true;
         }
         if allocated > 10 {
             bail!("Cannot allocate more than 10 points to any S.P.E.C.I.A.L. stat");
@@ -322,11 +315,11 @@ impl Build {
             bail!("S.P.E.C.I.A.L. stats cannot be less the 1")
         }
         self.special.insert(stat, allocated);
-        if bobblehead {
-            self.bobbleheads.insert(Bobblehead::Special(stat));
-        } else {
-            self.bobbleheads.remove(&Bobblehead::Special(stat));
+        if add_bobble {
+            self.perks
+                .insert(PerkId::Bobblehead(BobbleheadId::Special(stat)), 1);
         }
+        self.remove_invalid_perks();
         Ok(())
     }
     fn add_perk_impl(&mut self, id: PerkId, rank: u8) {
@@ -379,6 +372,7 @@ impl Build {
     pub fn remove_perk(&mut self, def: &PerkDef) -> anyhow::Result<()> {
         if let Some(id) = PERKS.get_by_right(def) {
             self.perks.remove(id);
+            self.remove_invalid_perks();
             Ok(())
         } else {
             bail!("Unknown perk")
@@ -389,9 +383,19 @@ impl Build {
             *i = 1;
         }
         self.special_book = None;
-        self.bobbleheads.clear();
         self.perks.clear();
         self.gender = None
+    }
+    fn remove_invalid_perks(&mut self) {
+        let special: BTreeMap<SpecialStat, u8> = self
+            .special
+            .keys()
+            .map(|&stat| (stat, self.total_base_points(stat)))
+            .collect();
+        self.perks.retain(|id, _| match id {
+            PerkId::Special { stat, points } => special[stat] >= *points,
+            _ => true,
+        });
     }
     pub fn dir() -> PathBuf {
         dirs::data_dir()
