@@ -204,6 +204,16 @@ fn main() {
                         build.save()?;
                         Ok("Build saved!".into())
                     }),
+                    Command::Load { path } => catch(|| {
+                        let path: String = path
+                            .iter()
+                            .map(|path| path.to_string_lossy().into_owned())
+                            .intersperse(" ".into())
+                            .collect();
+                        build = Build::load(path)?;
+                        level_limit = None;
+                        Ok("Build loaded!".into())
+                    }),
                     Command::Builds => catch(|| {
                         open::that(Build::dir())?;
                         Ok(String::new())
@@ -313,6 +323,8 @@ enum Command {
     LevelLimit { level: Option<u8> },
     #[clap(display_order = 2, about = "Save the build")]
     Save { name: Vec<String> },
+    #[clap(display_order = 2, about = "Load a build")]
+    Load { path: Vec<PathBuf> },
     #[clap(about = "Open the folder where builds are saved")]
     Builds,
     #[clap(display_order = 2, about = "Exit this tool")]
