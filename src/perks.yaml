@@ -338,6 +338,8 @@ special:
       ranks:
         - level: 1
           desc: Commune with beasts! With your gun, aim at any animal below your level and gain a chance to pacify it.
+        - level: 12
+          desc: When you successfully pacify an animal, you can incite it to attack
         - level: 28
           desc: When you successfully pacify an animal, you can give it specific commands.
     - name: Local Leader 
