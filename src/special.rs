@@ -281,7 +281,8 @@ effects!(
     (hp_add, f32),
     (ap_add, f32),
     (buy_price_sub, f32),
-    (stat_increase, StatIncrease)
+    (stat_increase, StatIncrease),
+    (sprint_drain_mul, f32),
 );
 
 #[derive(Debug, Clone, Copy, Deserialize)]

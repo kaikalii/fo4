@@ -537,6 +537,7 @@ special:
           desc: You now get +50 Damage Resistance and +50 Energy Resistance when you're sprinting.
         - level: 44
           desc: Sprinting costs 50% fewer Action Points.
+          sprint_drain_mul: 0.5
     - name: Ninja
       ranks:
         - level: 1

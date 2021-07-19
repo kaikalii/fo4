@@ -2,7 +2,7 @@ use std::{
     collections::BTreeMap,
     fmt, fs,
     iter::repeat,
-    ops::Add,
+    ops::{Add, Mul},
     path::{Path, PathBuf},
 };
 
@@ -79,7 +79,7 @@ impl fmt::Display for Build {
         writeln!(
             f,
             "{}",
-            format!("Base AP: {}", self.base_agility()).bright_blue()
+            format!("Base AP: {}", self.base_ap()).bright_blue()
         )?;
         writeln!(
             f,
@@ -103,6 +103,7 @@ impl fmt::Display for Build {
             format!("{:.0}%", self.buying_price_mul() * 100.0,).bright_white(),
             format!("{:.0}%", self.selling_price_mul() * 100.0).bright_white(),
         )?;
+        writeln!(f, "Sprint Time: {:.1} s", self.sprint_time())?;
         writeln!(f)?;
         for &stat in self.special.keys() {
             let total_points = self.total_base_points(stat);
@@ -163,7 +164,7 @@ impl Build {
         let level = self.required_level() as f32;
         self.base_health() + self.health_per_level() * (level - 1.0)
     }
-    pub fn base_agility(&self) -> f32 {
+    pub fn base_ap(&self) -> f32 {
         let agility = self.total_points(SpecialStat::Agility) as f32;
         let base = 60.0 + agility * 10.0;
         let from_perks = self.fold_effect(PerkDef::ap_add, 0.0, Add::add);
@@ -210,6 +211,12 @@ impl Build {
     pub fn melee_damage_mul(&self) -> f32 {
         1.0 + self.total_points(SpecialStat::Strength) as f32 * 0.1
             + self.fold_effect(PerkDef::melee_damage_add, 0.0, Add::add)
+    }
+    pub fn sprint_time(&self) -> f32 {
+        let ap_per_sec = (1.05 - 0.05 * self.total_points(SpecialStat::Endurance) as f32)
+            * 12.0
+            * dbg!(self.fold_effect(PerkDef::sprint_drain_mul, 1.0, Mul::mul));
+        self.base_ap() / ap_per_sec
     }
     pub fn total_base_points(&self, stat: SpecialStat) -> u8 {
         self.special[&stat]
