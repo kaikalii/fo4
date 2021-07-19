@@ -215,7 +215,7 @@ impl Build {
     pub fn sprint_time(&self) -> f32 {
         let ap_per_sec = (1.05 - 0.05 * self.total_points(SpecialStat::Endurance) as f32)
             * 12.0
-            * dbg!(self.fold_effect(PerkDef::sprint_drain_mul, 1.0, Mul::mul));
+            * self.fold_effect(PerkDef::sprint_drain_mul, 1.0, Mul::mul);
         self.base_ap() / ap_per_sec
     }
     pub fn total_base_points(&self, stat: SpecialStat) -> u8 {
