@@ -238,7 +238,7 @@ fn main() {
                     clap::ErrorKind::ValueValidation => {
                         println!("{}\n", e.info[2].bright_red())
                     }
-                    clap::ErrorKind::MissingArgumentOrSubcommand => {
+                    clap::ErrorKind::MissingRequiredArgument => {
                         println!("{}\n", "Type \"help\" for usage information".bright_blue());
                     }
                     clap::ErrorKind::DisplayHelp => {
