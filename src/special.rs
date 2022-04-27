@@ -1,5 +1,4 @@
 use std::{
-    array,
     cmp::Ordering,
     collections::BTreeMap,
     fmt,
@@ -436,14 +435,15 @@ impl FromStr for Difficulty {
     type Err = anyhow::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let s = s.to_lowercase();
-        let (difficulty, sim) = array::IntoIter::new([
+        let (difficulty, sim) = [
             Difficulty::VeryEasy,
             Difficulty::Easy,
             Difficulty::Normal,
             Difficulty::Hard,
             Difficulty::VeryHard,
             Difficulty::Survival,
-        ])
+        ]
+        .into_iter()
         .map(|difficulty| {
             (
                 difficulty,

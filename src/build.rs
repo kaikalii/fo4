@@ -1,7 +1,6 @@
 use std::{
     collections::BTreeMap,
     fmt, fs,
-    iter::repeat,
     ops::{Add, Mul},
     path::{Path, PathBuf},
 };
@@ -55,7 +54,7 @@ impl Default for Build {
 impl fmt::Display for Build {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if let Some(name) = &self.name {
-            let bars: String = repeat('-').take(name.len()).collect();
+            let bars: String = "-".repeat(name.len());
             writeln!(f, "{}", bars)?;
             writeln!(f, "{}", name)?;
             writeln!(f, "{}", bars)?;
@@ -254,7 +253,7 @@ impl Build {
     pub fn points_string(&self, stat: SpecialStat) -> String {
         format!(
             "{}{}{}",
-            self.special[&stat].to_string(),
+            self.special[&stat],
             if self.bobblehead_for(stat) {
                 " + bobblehead"
             } else {
@@ -497,7 +496,7 @@ impl Build {
         let difficulty = self.difficulty.unwrap_or_default();
         print!("{}", perk.name[gender].bright_yellow());
         let perk_id = PERKS.get_by_right(perk).expect("Unknown perk");
-        let my_rank = self.perks.get(&perk_id).copied().unwrap_or(0);
+        let my_rank = self.perks.get(perk_id).copied().unwrap_or(0);
         let print_rank = |i: Option<usize>,
                           required_level: u8,
                           description: &FullyVariable<String>| {
