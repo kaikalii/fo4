@@ -11,7 +11,7 @@ use std::{
 };
 
 use anyhow::bail;
-use clap::Clap;
+use clap::Parser;
 
 use build::*;
 use colored::Colorize;
@@ -234,10 +234,8 @@ fn main() {
             Err(e) => {
                 clear_terminal();
                 println!("{}", build);
-                match e.kind {
-                    clap::ErrorKind::ValueValidation => {
-                        println!("{}\n", e.info[2].bright_red())
-                    }
+                match e.kind() {
+                    clap::ErrorKind::ValueValidation => println!("{e}\n"),
                     clap::ErrorKind::MissingRequiredArgument => {
                         println!("{}\n", "Type \"help\" for usage information".bright_blue());
                     }
@@ -270,14 +268,14 @@ where
     f()
 }
 
-#[derive(Clap)]
+#[derive(Parser)]
 struct App {
     path: Vec<PathBuf>,
-    #[clap(long = "nocolor", about = "Run without terminal colors")]
+    #[clap(long = "nocolor", help = "Run without terminal colors")]
     no_color: bool,
 }
 
-#[derive(Debug, Clap)]
+#[derive(Debug, Parser)]
 #[allow(clippy::large_enum_variant)]
 enum Command {
     #[clap(display_order = 1, about = "Set a special stat")]
