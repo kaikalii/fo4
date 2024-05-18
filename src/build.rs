@@ -424,7 +424,7 @@ impl Build {
             );
         };
         fs::create_dir_all(Build::dir())?;
-        fs::write(self.path(), &serde_yaml::to_vec(&self)?)?;
+        fs::write(self.path(), serde_yaml::to_vec(&self)?)?;
         Ok(())
     }
     pub fn load(path: impl AsRef<Path>) -> anyhow::Result<Self> {

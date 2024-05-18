@@ -55,7 +55,7 @@ fn main() {
 
     let mut level_limit: Option<u8> = None;
 
-    for line in stdin().lock().lines().filter_map(|res| res.ok()) {
+    for line in stdin().lock().lines().map_while(Result::ok) {
         let args: Vec<&str> = once("fo4").chain(line.split_whitespace()).collect();
         match Command::try_parse_from(args) {
             Ok(command) => {

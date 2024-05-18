@@ -143,7 +143,7 @@ impl FromStr for PerkDef {
             .flat_map(|def| {
                 def.name.iter().map(move |name| {
                     let name = name.to_lowercase();
-                    (def, similarity(s, &name))
+                    (def, similarity(s, name))
                 })
             })
             .max_by_key(|(_, sim)| (*sim * 1000000.0) as u32)
@@ -166,7 +166,7 @@ impl Eq for PerkDef {}
 
 impl PartialOrd for PerkDef {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.name.partial_cmp(&other.name)
+        Some(self.cmp(other))
     }
 }
 
@@ -215,7 +215,7 @@ impl Ranks {
     pub fn max_rank(&self) -> u8 {
         match self {
             Ranks::Single { .. } => 1,
-            Ranks::UniformCumulative { count, .. } => *count as u8,
+            Ranks::UniformCumulative { count, .. } => *count,
             Ranks::VaryingCumulative(ranks) => ranks.len() as u8,
         }
     }
@@ -367,16 +367,11 @@ impl<T> Selectable<T> for Gendered<T> {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub enum Gender {
+    #[default]
     Male,
     Female,
-}
-
-impl Default for Gender {
-    fn default() -> Self {
-        Gender::Male
-    }
 }
 
 impl FromStr for Gender {
@@ -390,10 +385,11 @@ impl FromStr for Gender {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Default, Serialize, Deserialize)]
 pub enum Difficulty {
     VeryEasy,
     Easy,
+    #[default]
     Normal,
     Hard,
     VeryHard,
@@ -424,12 +420,6 @@ impl<T> Selectable<T> for Difficultied<T> {
 }
 
 pub type MaybeDifficultied<T> = MaybeVaried<T, Difficultied<T>>;
-
-impl Default for Difficulty {
-    fn default() -> Self {
-        Difficulty::Normal
-    }
-}
 
 impl FromStr for Difficulty {
     type Err = anyhow::Error;
