@@ -88,11 +88,10 @@ impl fmt::Display for Build {
                 self.remaining_initial_points()
             )?;
         } else if let Some(limit) = self.level_limit {
-            writeln!(
-                f,
-                "Points Before Limit: {}",
-                limit - self.level_up_assigned_points()
-            )?;
+            let points_left = limit - self.level_up_assigned_points();
+            if points_left > 0 {
+                writeln!(f, "Points Before Limit: {points_left}")?;
+            }
         }
         writeln!(
             f,
