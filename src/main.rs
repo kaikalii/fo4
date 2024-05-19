@@ -51,7 +51,8 @@ fn main() {
     };
 
     println!("\n{}", build);
-    println!("{}\n", "Type \"help\" for usage information".bright_blue());
+    let type_help = || println!("{}\n", "Type \"help\" for usage information".bright_blue());
+    type_help();
 
     let mut level_limit: Option<u8> = None;
 
@@ -236,9 +237,7 @@ fn main() {
                 println!("{}", build);
                 match e.kind() {
                     clap::ErrorKind::ValueValidation => println!("{e}\n"),
-                    clap::ErrorKind::MissingRequiredArgument => {
-                        println!("{}\n", "Type \"help\" for usage information".bright_blue());
-                    }
+                    clap::ErrorKind::DisplayHelpOnMissingArgumentOrSubcommand => type_help(),
                     clap::ErrorKind::DisplayHelp => {
                         let message = e.to_string();
                         println!(
@@ -250,7 +249,18 @@ fn main() {
                                 .replace(" fo4", "")
                         );
                     }
-                    _ => println!("{}\n", e),
+                    clap::ErrorKind::UnknownArgument => {
+                        let text = e.to_string();
+                        let command = text.split('\'').nth(1).unwrap_or(&text);
+                        println!("{}\n", format!("Unknown command: {command}").bright_red());
+                        type_help();
+                    }
+                    _ => {
+                        let message = e.to_string();
+                        let message =
+                            message.trim_end_matches("\n\nFor more information try --help\n");
+                        println!("{}\n", message)
+                    }
                 }
             }
         }
