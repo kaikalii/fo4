@@ -60,7 +60,7 @@ impl Default for Build {
 impl fmt::Display for Build {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if let Some(name) = &self.name {
-            let bars: String = "-".repeat(name.len());
+            let bars: String = "─".repeat(name.len());
             writeln!(f, "{}", bars)?;
             writeln!(f, "{}", name)?;
             writeln!(f, "{}", bars)?;
