@@ -27,8 +27,10 @@ pub struct Build {
     pub difficulty: Option<Difficulty>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub perks: BTreeMap<PerkId, u8>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub show_sheet: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub level_limit: Option<u8>,
 }
 
 impl Default for Build {
@@ -50,6 +52,7 @@ impl Default for Build {
             special_book: None,
             perks: BTreeMap::new(),
             show_sheet: false,
+            level_limit: None,
         }
     }
 }
@@ -68,7 +71,16 @@ impl fmt::Display for Build {
         if let Some(gender) = self.gender {
             writeln!(f, "Gender: {:?}", gender)?;
         }
-        writeln!(f, "Required Level: {}", self.required_level())?;
+        if let Some(limit) = self.level_limit {
+            writeln!(
+                f,
+                "Required Level: {} {}",
+                self.required_level(),
+                format!("(limit {})", limit).bright_black()
+            )?;
+        } else {
+            writeln!(f, "Required Level: {}", self.required_level())?;
+        }
         if self.remaining_initial_points() > 0 {
             writeln!(f, "Remaining Points: {}", self.remaining_initial_points())?;
         }

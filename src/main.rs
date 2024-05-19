@@ -54,8 +54,6 @@ fn main() {
     let type_help = || println!("{}\n", "Type \"help\" for usage information".bright_blue());
     type_help();
 
-    let mut level_limit: Option<u8> = None;
-
     for line in stdin().lock().lines().map_while(Result::ok) {
         let args: Vec<&str> = once("fo4").chain(line.split_whitespace()).collect();
         match Command::try_parse_from(args) {
@@ -72,7 +70,7 @@ fn main() {
                         let (perk, rank) = join_perk_def_and_rank(&perk_and_rank)?;
                         let rank = rank.unwrap_or_else(|| perk.max_rank()).min(
                             perk.ranks
-                                .highest_rank_within_level(level_limit.unwrap_or(u8::MAX)),
+                                .highest_rank_within_level(build.level_limit.unwrap_or(u8::MAX)),
                         );
                         build.add_perk(&perk, rank)?;
                         let name = &perk.name[build.gender.unwrap_or_default()];
@@ -191,7 +189,7 @@ fn main() {
                         Ok(format!("Difficulty set to {:?}", difficulty))
                     }
                     Command::LevelLimit { level } => {
-                        level_limit = level;
+                        build.level_limit = level;
                         Ok(if let Some(level) = level {
                             format!("Level limit set to {}", level)
                         } else {
@@ -216,7 +214,6 @@ fn main() {
                             .intersperse(" ".into())
                             .collect();
                         build = Build::load(path)?;
-                        level_limit = None;
                         Ok("Build loaded!".into())
                     }),
                     Command::Builds => catch(|| {
