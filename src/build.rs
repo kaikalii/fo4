@@ -473,13 +473,12 @@ impl Build {
                         Color::BrightBlack
                     };
                     let width = self.column_width(*stat);
-                    let text = &def.name[self.gender.unwrap_or_default()];
-                    let text = if let Some(rank) = self.perks.get(perk) {
-                        format!("{text} {rank}")
-                    } else {
-                        text.to_string()
+                    let mut text = format!("{:width$}", &def.name[self.gender.unwrap_or_default()])
+                        .color(color);
+                    if self.perks.contains_key(perk) {
+                        text = text.bold()
                     };
-                    write!(f, "{}", format!("{:width$}", text).color(color))?;
+                    write!(f, "{text}")?;
                     if *stat < SpecialStat::Luck {
                         write!(f, "│")?;
                     }

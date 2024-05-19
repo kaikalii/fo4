@@ -330,7 +330,7 @@ enum Command {
         about = "Limit the maximum required level for added perks"
     )]
     LevelLimit { level: Option<u8> },
-    #[clap(about = "Toggle the build sheet display")]
+    #[clap(alias = "map", about = "Toggle the build sheet display")]
     Sheet,
     #[clap(display_order = 2, about = "Save the build")]
     Save { name: Vec<String> },
