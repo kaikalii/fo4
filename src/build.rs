@@ -27,6 +27,8 @@ pub struct Build {
     pub difficulty: Option<Difficulty>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub perks: BTreeMap<PerkId, u8>,
+    #[serde(default)]
+    pub show_sheet: bool,
 }
 
 impl Default for Build {
@@ -47,6 +49,7 @@ impl Default for Build {
             difficulty: None,
             special_book: None,
             perks: BTreeMap::new(),
+            show_sheet: false,
         }
     }
 }
@@ -122,10 +125,38 @@ impl fmt::Display for Build {
             )?;
             writeln!(f)?;
         }
+        if self.show_sheet {
+            writeln!(f)?;
+            for (i, stat) in SpecialStat::ALL.iter().enumerate() {
+                if i > 0 {
+                    write!(f, "│")?;
+                }
+                let width = self.column_width(*stat);
+                write!(f, "{:width$}", stat.to_string())?;
+            }
+            writeln!(f)?;
+            for (i, stat) in SpecialStat::ALL.iter().enumerate() {
+                if i > 0 {
+                    write!(f, "┼")?;
+                }
+                let width = self.column_width(*stat);
+                write!(f, "{}", "─".repeat(width))?;
+            }
+            writeln!(f)?;
+            for point in 1..=10 {
+                self.fmt_point(point, f)?;
+                writeln!(f)?;
+            }
+        }
         if !self.perks.is_empty() {
             writeln!(f)?;
             let mut last_kind = None;
             for (id, rank) in &self.perks {
+                if self.show_sheet && matches!(id, PerkId::Special { .. })
+                    || matches!(id, PerkId::Bobblehead(_))
+                {
+                    continue;
+                }
                 let kind = id.kind();
                 if Some(kind) != last_kind {
                     writeln!(f, "{}", kind.to_string().bright_yellow())?;
@@ -406,6 +437,44 @@ impl Build {
             PerkId::Special { stat, points } => special[stat] >= *points,
             _ => true,
         });
+    }
+    fn column_width(&self, stat: SpecialStat) -> usize {
+        PERKS
+            .iter()
+            .filter(|(id, _)| id.kind() == PerkKind::Special(stat))
+            .map(|(id, def)| {
+                def.name[self.gender.unwrap_or_default()].chars().count()
+                    + (self.perks.contains_key(id) as usize) * 2
+            })
+            .max()
+            .unwrap_or(0)
+    }
+    fn fmt_point(&self, point: u8, f: &mut fmt::Formatter) -> fmt::Result {
+        for (perk, def) in PERKS.iter() {
+            if let PerkId::Special { stat, points } = perk {
+                if *points == point {
+                    let color = if self.perks.contains_key(perk) {
+                        Color::Cyan
+                    } else if self.total_points(*stat) >= *points {
+                        Color::White
+                    } else {
+                        Color::BrightBlack
+                    };
+                    let width = self.column_width(*stat);
+                    let text = &def.name[self.gender.unwrap_or_default()];
+                    let text = if let Some(rank) = self.perks.get(perk) {
+                        format!("{text} {rank}")
+                    } else {
+                        text.to_string()
+                    };
+                    write!(f, "{}", format!("{:width$}", text).color(color))?;
+                    if *stat < SpecialStat::Luck {
+                        write!(f, "│")?;
+                    }
+                }
+            }
+        }
+        Ok(())
     }
     pub fn dir() -> PathBuf {
         dirs::data_dir()

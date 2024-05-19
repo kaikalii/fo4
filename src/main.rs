@@ -198,6 +198,10 @@ fn main() {
                             "Removed level limit".into()
                         })
                     }
+                    Command::Sheet => {
+                        build.show_sheet = !build.show_sheet;
+                        Ok(String::new())
+                    }
                     Command::Save { name } => catch(|| {
                         if !name.is_empty() {
                             build.name = Some(name.into_iter().intersperse(" ".into()).collect());
@@ -329,6 +333,8 @@ enum Command {
         about = "Limit the maximum required level for added perks"
     )]
     LevelLimit { level: Option<u8> },
+    #[clap(about = "Toggle the build sheet display")]
+    Sheet,
     #[clap(display_order = 2, about = "Save the build")]
     Save { name: Vec<String> },
     #[clap(display_order = 2, about = "Load a build")]
