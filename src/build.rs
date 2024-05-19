@@ -82,7 +82,17 @@ impl fmt::Display for Build {
             writeln!(f, "Required Level: {}", self.required_level())?;
         }
         if self.remaining_initial_points() > 0 {
-            writeln!(f, "Remaining Points: {}", self.remaining_initial_points())?;
+            writeln!(
+                f,
+                "Remaining Initial Points: {}",
+                self.remaining_initial_points()
+            )?;
+        } else if let Some(limit) = self.level_limit {
+            writeln!(
+                f,
+                "Points Before Limit: {}",
+                limit - self.level_up_assigned_points()
+            )?;
         }
         writeln!(
             f,
@@ -473,8 +483,13 @@ impl Build {
                         Color::BrightBlack
                     };
                     let width = self.column_width(*stat);
-                    let mut text = format!("{:width$}", &def.name[self.gender.unwrap_or_default()])
-                        .color(color);
+                    let text = &def.name[self.gender.unwrap_or_default()];
+                    let text = if let Some(rank) = self.perks.get(perk) {
+                        format!("{text} {rank}")
+                    } else {
+                        text.to_string()
+                    };
+                    let mut text = format!("{:width$}", text).color(color);
                     if self.perks.contains_key(perk) {
                         text = text.bold()
                     };
