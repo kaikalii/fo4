@@ -18,7 +18,8 @@ Requires Git, Rust, and Cargo to be installed.
 Run the following commands to install:
 
 ```
-git clone https://github.com/kaikalii/fo4
-cd fo4
+git clone https://github.com/kaikalii/fo4builder
+cd fo4builder
 cargo install --path .
 ```
+Then run with `fo4builder`.
